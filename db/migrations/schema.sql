@@ -1,0 +1,1 @@
+-- The first migration to start the database.
