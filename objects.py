@@ -1,10 +1,17 @@
 import pandas
+from dataclasses import dataclass
 
+@dataclass
 class DataBlock:
-    def __init__(self, data: pandas.DataFrame, meta: dict, id: int):
-        self.data = data
-        self.meta = meta
-        self.id = id
+    title: str
+    type:str
+    source: str
+    source_id: str
+    def __init__(self, title: str, source: str, type: str, source_id=str):
+        self.title = title
+        self.type = type
+        self.source = source
+        self.source_id = source_id
     def fetch(self): # Include logic as func param
         pass
     def validate(self):

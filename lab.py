@@ -1,19 +1,47 @@
-import object
+import objects
+import requests
+import sqlite3
 
-#TODO:
+conn = sqlite3.connect('db/scripts/stat-db.db')
+api_url = "http://api.kolada.se/v2"
 
-"""
-Integration
-    Source: <Kolada>
-    Output: <List of datablocks for given source, could be a selection of 
-    things available on Kolada
+def datablocks_from_value_list(vl) ->list:
+    return [
+        objects.DataBlock(
+            title=value["title"], 
+            type="timeseries",
+            source="Kolada",
+            source_id=value["id"]
+        )
+        for value in vl
+    ]
 
-Steps:
-1. Get data, normalise and save to db
-2. Create admin tool with which one can manipulate and query data from the database
-    Perhaps this as well could be the same monolith? To make things easier..
-    Just make sure to decouple from integration steps...
-3. Create simple client (React) with which one can utilise the API
+def list_kolada_kpis(conn: sqlite3.Connection):
+    url = api_url + "/kpi"
+    datablocks = []
+    data = {}
 
-"""
+    res = requests.get(url)
+    if res.status_code!= 200:
+        exit('Bad res: %s' % res.status_code)
+    data = res.json()
+    datablocks = datablocks_from_value_list(data["values"])
+
+    #Loop through rest of pages if any ... notice some code repetition here...
+    page = 2
+    while data["count"] > 0:
+        paged_url = url + '?&page=%d' % page
+        data = requests.get(paged_url).json()
+        if res.status_code!= 200:
+            exit('Bad res: %s' % res.status_code)
+        next_blocks = datablocks_from_value_list(data['values'])
+        datablocks.extend(next_blocks)
+        page +=1
+    
+    for block in datablocks:
+        print ('%s : %s' % (block.source_id, block.title) )
+    return datablocks
+
+list_kolada_kpis(conn)
+
 
