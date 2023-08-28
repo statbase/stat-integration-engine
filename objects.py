@@ -7,11 +7,13 @@ class DataBlock:
     type:str
     source: str
     source_id: str
-    def __init__(self, title: str, source: str, type: str, source_id=str):
+    category: str
+    def __init__(self, title: str, source: str, type: str, source_id: str, category: str):
         self.title = title
         self.type = type
         self.source = source
         self.source_id = source_id
+        self.category = category
     def fetch(self): # Include logic as func param
         pass
     def validate(self):
