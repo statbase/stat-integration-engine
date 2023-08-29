@@ -1,4 +1,3 @@
-import pandas
 from dataclasses import dataclass
 
 @dataclass
@@ -8,6 +7,7 @@ class DataBlock:
     source: str
     source_id: str
     category: str
+    data_id: int
     def __init__(self, title: str, source: str, type: str, source_id: str, category: str):
         self.title = title
         self.type = type

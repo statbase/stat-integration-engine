@@ -7,7 +7,7 @@ regions = {}
 create_table = """
 CREATE TABLE "geo_unit" (
 	"type"	TEXT NOT NULL,
-	"geo_id" INTEGER NOT NULL,
+	"geo_id" TEXT NOT NULL,
 	"name"	TEXT,
 	PRIMARY KEY("geo_id")
 )
