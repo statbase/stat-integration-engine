@@ -1,23 +1,36 @@
 from dataclasses import dataclass
 
 @dataclass
-class DataBlock:
+class SourceDataBlock:
     title: str
     type:str
     source: str
     source_id: str
     category: str
-    data_id: int
-    def __init__(self, title: str, source: str, type: str, source_id: str, category: str):
+    integration_id: int
+    def __init__(self, title: str, source: str, type: str, source_id: str, category: str, integration_id:int):
         self.title = title
         self.type = type
         self.source = source
         self.source_id = source_id
         self.category = category
+        self.integration_id = integration_id
     def fetch(self): # Include logic as func param
         pass
     def validate(self):
         pass
+
+@dataclass
+class NormalisedDataBlock(SourceDataBlock):
+    data_id:int
+    def __init__(self, title: str, source: str, type: str, source_id: str, category: str, data_id:int, integration_id:int):
+        self.title = title
+        self.type = type
+        self.source = source
+        self.source_id = source_id
+        self.category = category
+        self.data_id = data_id
+        self.integration_id = integration_id
 
 class Entity:
     def __init__(self, name: str, geo_id: int, id: int):

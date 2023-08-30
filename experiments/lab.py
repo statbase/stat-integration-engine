@@ -101,7 +101,7 @@ def db_insert_timeseries(df:pd.DataFrame):
     conn.commit()
     conn.close()
     
-def db_upsert_kolada_datablocks(datablocks:list[objects.DataBlock]):
+def db_upsert_datablocks(datablocks:list[objects.DataBlock]):
     cur = conn.cursor()
     for block in datablocks:
         cur.execute("""
@@ -147,4 +147,4 @@ kpis = {
 #df = fetch_timeseries_for_kpi_tuples(kpis, api_url)
 #db_insert_timeseries(df)
 data = fetch_kolada_datablocks(api_url)
-db_upsert_kolada_datablocks(data)
+db_upsert_datablocks(data)
