@@ -1,4 +1,4 @@
-import objects
+import objects.objects as objects
 import pandas as pd
 import requests
 import db.db as db
@@ -39,7 +39,6 @@ class KoladaIntegration(IntegrationInterface):
 
     def get_datablocks(self)->list[objects.SourceDataBlock]:
         url = self.base_url + "/kpi"
-        print(url)
         datablocks = self.datablocks_from_kolada_endpoint(url)
         #Fetch rest of pages if any
         page = 2
@@ -52,30 +51,31 @@ class KoladaIntegration(IntegrationInterface):
             page +=1
         return datablocks
     
+    #Messy? Also consider return value to be []objects.ts_row or something...
     def get_timeseries(self, dblocks:list[objects.NormalisedDataBlock])->pd.DataFrame:
         cols = {"variable":[], "date":[], "value":[], "geo_id":[], "data_id":[]}
         communes = conn.db_get_commune_ids()
         for dblock in dblocks:
+            print(dblock.source_id)
             for commune_id in communes:
                 url = '%s/data/kpi/%s/municipality/%s' % (self.base_url, dblock.source_id, commune_id)
                 data = requestJsonBody(url)
-                values = data["values"]
-                for kpi_meta in values:
-                    datapoints = kpi_meta["values"][0]
-                    measure_val = datapoints["value"]
-                    if measure_val == None:
-                        continue
-                    cols["data_id"].append(dblock.data_id)
-                    cols["value"].append(measure_val)
-                    cols["variable"].append(datapoints["gender"])
-                    #clean date
-                    date = parseDateToIso1801(kpi_meta["period"])
-                    cols["date"].append(date)
-                    #clean stupid municipality code (seriously Kolada, why do you make me do this!???)
-                    geo_id = kpi_meta["municipality"]
-                    if len(geo_id) == 3:
-                        geo_id = "0" + str(geo_id)
-                    cols["geo_id"].append(geo_id)
+                for year in data["values"]:
+                    datapoints = year["values"]
+                    for datapoint in datapoints:
+                        measure_val = datapoint["value"]
+                        if measure_val == None:
+                            continue
+                        cols["data_id"].append(dblock.data_id)
+                        cols["value"].append(measure_val)
+                        cols["variable"].append(datapoint["gender"])
+                        date = parseDateToIso1801(year["period"])
+                        cols["date"].append(date)
+                        #clean stupid municipality code (seriously Kolada, why do you make me do this!???)
+                        geo_id = year["municipality"]
+                        if len(geo_id) == 3:
+                            geo_id = "0" + str(geo_id)
+                        cols["geo_id"].append(geo_id)
         return pd.DataFrame(cols)
 
     def datablocks_from_kolada_endpoint(self, url) ->list:
@@ -84,14 +84,20 @@ class KoladaIntegration(IntegrationInterface):
             return None
         values = data["values"]
         return [
-            objects.SourceDataBlock(
-                title=value["title"], 
-                type="timeseries",
-                source="Kolada",
-                category=str(value["operating_area"])+ "->"+ str(value["perspective"]),
-                source_id=value["id"],
-                integration_id = self.integration_id
+            objects.SourceDataBlock(**{
+                "title": value["title"],
+                "type": "timeseries",
+                "source": "Kolada",
+                "category": str(value["perspective"]) + "->" + str(value["operating_area"]),
+                "source_id": value["id"],
+                "integration_id": self.integration_id,
+                "var_labels": "Kön",
+                "geo_groups": value["municipality_type"]}
             )
-            for value in values
-    ]
+            for value in values]
+    
+    def set_geo_group(label:str):
+        if label== "L":
+            return "R"
+        return "C"
 
