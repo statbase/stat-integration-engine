@@ -1,1 +1,3 @@
 - Config instance to pass around, declare in main...
+- Fix date formatting
+- 
