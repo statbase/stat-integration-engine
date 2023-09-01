@@ -2,6 +2,7 @@ import objects.objects as objects
 import pandas as pd
 import requests
 import db.db as db
+import re
 
 import dateutil.parser as parser
 
@@ -18,6 +19,8 @@ def requestJsonBody(url):
 def parseDateToIso1801(date_str) -> str:
     return parser.parse(str(date_str)).isoformat()
 
+def split_tags(tag_string:str) ->str:
+    return re.sub(r',(?!\s)', ';', tag_string)
 
 class IntegrationInterface:
     base_url: str
@@ -88,16 +91,18 @@ class KoladaIntegration(IntegrationInterface):
                 "title": value["title"],
                 "type": "timeseries",
                 "source": "Kolada",
-                "category": str(value["perspective"]) + "->" + str(value["operating_area"]),
+                "tags": split_tags(str(value["perspective"])) + ";" + split_tags(str(value["operating_area"])),
                 "source_id": value["id"],
                 "integration_id": self.integration_id,
                 "var_labels": "Kön",
-                "geo_groups": value["municipality_type"]}
-            )
+                "geo_groups": self.set_geo_group(value["municipality_type"])})
             for value in values]
     
-    def set_geo_group(label:str):
+
+    def set_geo_group(self, label:str):
         if label== "L":
             return "R"
+        if label== "A":
+            return "A"
         return "C"
 

@@ -26,8 +26,7 @@ conn.delete_datablocks_for_integration(kolada.integration_id)
 conn.upsert_datablocks(source_blocks)
 
 #Retrieve the datablocks as normalised
-normalised_blocks = conn.get_datablocks_by_source("Kolada")
-
+normalised_blocks = conn.get_datablocks_by_field(name="source", value="Kolada")
 #Fetch the data from source using the normalised blocks
 df = kolada.get_timeseries(normalised_blocks)
 
@@ -35,5 +34,5 @@ df = kolada.get_timeseries(normalised_blocks)
 conn.insert_timeseries(df)
 
 #get timeseries from db
-res = conn.get_timeseries_by_id(normalised_blocks[0])
+res = conn.get_timeseries_by_id(normalised_blocks[0].data_id)
 print(res)

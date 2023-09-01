@@ -2,5 +2,4 @@
 lib*
 bin*
 .DS*
-
-
+*__pycache__*
