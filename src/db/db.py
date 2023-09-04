@@ -21,6 +21,27 @@ class db_conn:
         """, (integration_id,))
         self.conn.commit()
 
+    """
+    This is more expensive than it should be. 
+    Consider either storing the tag + tag-datablock relations in separate tables instead
+    Alternatively, load & cache this bad boy at startup. It ain't expected to change much during runtime, anyhow.
+    """
+    def get_all_tags(self) -> dict[str:str]:
+        tag_counts = {}
+        cur = self.conn.cursor()
+        cur.execute('SELECT distinct tags from data_block') 
+        self.conn.commit()
+        rows = cur.fetchall()
+        for row in rows:
+            tags = str(row['tags']).split(';')
+            for tag in tags:
+                if tag in tag_counts.keys():
+                    tag_counts[tag] +=1
+                else:
+                   tag_counts[tag] = 1
+        return dict(sorted(tag_counts.items(), key=lambda count: count[1], reverse=True))
+    
+
     def upsert_datablocks(self, datablocks:list[objects.SourceDataBlock]):
         cur = self.conn.cursor()
         for block in datablocks:
@@ -40,24 +61,29 @@ class db_conn:
         self.conn.commit()
 
     #TODO: Receiver should be timeseries object. Transform Timeseries -> Dataframe in class method.
-    def insert_timeseries(self, df:pd.DataFrame):
-        df.to_sql(con=self.conn, name='timeseries', if_exists='append', index=False)
+    def insert_timeseries(self, ts:objects.Timeseries):
+        ts.df.to_sql(con=self.conn, name='timeseries', if_exists='append', index=False)
         self.conn.commit()
 
-    def get_timeseries_by_id(self, data_id:int) -> pd.DataFrame:
-        q = "SELECT * FROM timeseries WHERE data_id = %i" % data_id
-        return pd.read_sql_query(q, self.conn)
+    def get_timeseries_by_id(self, data_id:int) -> objects.Timeseries:
+        q = "SELECT %s FROM timeseries WHERE data_id = %i" % (objects.stringify_ts_columns(), data_id)
+        df = pd.read_sql_query(q, self.conn)
+        return objects.Timeseries(df)
 
+    def get_timeseries_by_id(self, data_id:int) -> objects.Timeseries:
+        print(data_id)
+        q = "SELECT %s FROM timeseries WHERE data_id = %i" % (objects.stringify_ts_columns(), data_id)
+        df = pd.read_sql_query(q, self.conn)
+        return objects.Timeseries(df)
+    
 
-       
-    def get_datablocks_by_field(self,name:str,value)-> list[objects.NormalisedDataBlock]: 
+    def get_datablocks_by_field(self,name:str,value:str,operator:str)-> list[objects.NormalisedDataBlock]: 
         cur = self.conn.cursor()
         cur.execute("""
         SELECT data_id, type, source, source_id, tags, title, integration_id, var_labels, geo_groups
-        FROM data_block WHERE (%s) = (?) AND geo_groups='C'  ORDER BY RANDOM() LIMIT 10
-        """ % name, (value,))
+        FROM data_block WHERE (%s) %s (?) AND geo_groups='C' ORDER BY RANDOM()
+        """ % (name, operator), (value,))
         rows = cur.fetchall()
-    
         return [
             objects.NormalisedDataBlock(**{
                 "data_id": row["data_id"],
@@ -79,4 +105,3 @@ class db_conn:
         id_list = [row[0] for row in rows]
         return id_list
     
-
