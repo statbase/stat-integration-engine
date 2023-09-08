@@ -6,8 +6,6 @@ import re
 
 import dateutil.parser as parser
 
-conn = db.db_conn('db/stat-db.db') #This won't be needed if we store communes outside db
-
 #Helpers
 def requestJsonBody(url):
     res = requests.get(url)
@@ -25,6 +23,17 @@ def parseDate(date_str:str) -> str:
 
 def split_tags(tag_string:str) ->str:
     return re.sub(r',(?!\s)', ';', tag_string)
+
+#temp: cap to 10 until we figure out to collect ts in parallel...
+def get_commune_ids():
+    with open('integrations/files/geo_data.csv', 'r') as file:
+        ids = []
+        for line in file:
+            key, value = line.strip().split(';')
+            if " län" in value:
+               continue
+            ids.append(key)
+        return ids[:10]
 
 class BaseIntegration:
     base_url: str
@@ -60,7 +69,7 @@ class KoladaIntegration(BaseIntegration):
     
     def get_timeseries(self, dblocks:list[objects.NormalisedDataBlock])->objects.Timeseries:
         cols = {col : [] for col in objects.ts_cols}
-        communes = conn.db_get_commune_ids()
+        communes = get_commune_ids()
         for dblock in dblocks:
             for commune_id in communes:
                 url = '%s/data/kpi/%s/municipality/%s' % (self.base_url, dblock.source_id, commune_id)

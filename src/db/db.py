@@ -97,6 +97,33 @@ class db_conn:
                 "geo_groups": row["geo_groups"]})
                 for row in rows]
     
+    #Primitive as hell but works better than expected.
+    def get_datablocks_by_search(self,term:str)-> list[objects.NormalisedDataBlock]: 
+        cur = self.conn.cursor()
+        cur.execute("""
+        SELECT data_id, type, source, source_id, tags, title, integration_id, var_labels, geo_groups
+        FROM data_block WHERE title LIKE (?) OR tags LIKE (?) AND geo_groups='C' 
+        ORDER BY 
+            CASE 
+                WHEN title LIKE (?) THEN 1
+                ELSE 2
+            END
+        LIMIT 100
+        """, (term,term,term))
+        rows = cur.fetchall()
+        return [
+            objects.NormalisedDataBlock(**{
+                "data_id": row["data_id"],
+                "type": row["type"],
+                "source": row["source"],
+                "source_id": row["source_id"],
+                "tags": row["tags"],
+                "title": row["title"],
+                "integration_id": row["integration_id"],
+                "var_labels": row["var_labels"],
+                "geo_groups": row["geo_groups"]})
+                for row in rows]
+    
     #Rethink this, maybe... Should probably be stored in csv file and loaded into memory at startup
     def db_get_commune_ids(self) -> list:
         cur = self.conn.cursor()

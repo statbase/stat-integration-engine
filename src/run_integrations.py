@@ -29,12 +29,12 @@ conn.upsert_datablocks(source_blocks)
 normalised_blocks = conn.get_datablocks_by_field(name="source", value="Kolada", operator="=")
 
 #Fetch the data from source using the normalised blocks
-print([block.data_id for block in normalised_blocks[:10]])
+print([(block.data_id, block.source_id) for block in normalised_blocks[:10]])
 ts = kolada.get_timeseries(normalised_blocks[:10])
 
 #Upsert the datablocks
 conn.insert_timeseries(ts)
-
 #get timeseries from db
+
 res = conn.get_timeseries_by_id(normalised_blocks[0].data_id)
 print(res.df)
