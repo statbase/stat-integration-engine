@@ -17,7 +17,7 @@ class SourceDataBlock(BaseModel):
     integration_id: int = Field(..., ge=1)
     var_labels: str = Field(..., min_length=1)
     geo_groups:str = Field(..., min_length=1)
-
+    description:str = Field(..., )
 
 class NormalisedDataBlock(SourceDataBlock):
     data_id:int = Field(ge=1)
@@ -27,22 +27,6 @@ class Entity:
         self.name = name
         self.geo_id = geo_id
         self.id = id
-        
-class Geo:
-    def __init__(self, id: int, type: str):
-        self.id = id
-        self.type = type
-
-class Category:
-    def __init__(self, id: int, value: str, parent_id: int):
-        self.id = id
-        self.value = value
-        self.parent_id = parent_id
-
-class Tag:  
-    def __init__(self, id: int, value: str):
-        self.id = id
-        self.value = value
 
 class Timeseries:
     df:pd.DataFrame

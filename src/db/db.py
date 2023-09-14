@@ -2,6 +2,33 @@ import sqlite3
 import objects.objects as objects
 import pandas as pd
 
+
+#Helpers, move to separate classes maybe?
+def dblock_from_rows(rows: list[sqlite3.Row]):
+    return [
+    objects.NormalisedDataBlock(**{
+        "data_id": row["data_id"],
+        "type": row["type"],
+        "source": row["source"],
+        "source_id": row["source_id"],
+        "tags": row["tags"],
+        "title": row["title"],
+        "description": row["description"],
+        "integration_id": row["integration_id"],
+        "var_labels": row["var_labels"],
+        "geo_groups": row["geo_groups"]})
+        for row in rows]
+
+def apply_filters(q:str, **filters):
+    for k,v in filters.items():
+        operator = '='
+        if k == 'tags':
+            operator = "LIKE"
+            v = '%' + v + '%'
+        q += f" {k} {operator} '{v}' AND"
+    q = q[:-4]
+    return q 
+
 class db_conn:
     conn: sqlite3.Connection
     def __init__(self, db_path:str):
@@ -12,14 +39,6 @@ class db_conn:
 
     def close(self):
         self.conn.close()
-
-    def delete_datablocks_for_integration(self, integration_id:int):
-        cur = self.conn.cursor()
-        cur.execute("""
-        DELETE FROM data_block
-        WHERE integration_id = (?)
-        """, (integration_id,))
-        self.conn.commit()
 
     """
     This is more expensive than it should be. 
@@ -46,21 +65,21 @@ class db_conn:
         cur = self.conn.cursor()
         for block in datablocks:
             cur.execute("""
-            INSERT INTO data_block(title, type, source, tags, source_id, integration_id, var_labels, geo_groups)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO data_block(title, type, source, tags, source_id, integration_id, var_labels, geo_groups, description)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(source_id) DO UPDATE SET
             title = excluded.title,
             type = excluded.type,
             source = excluded.source,
             tags = excluded.tags,      
             var_labels = excluded.var_labels,
-            geo_groups = excluded.geo_groups
+            geo_groups = excluded.geo_groups,
+            description = excluded.description
             """,
-            (block.title, block.type, block.source, block.tags, block.source_id, block.integration_id, block.var_labels, block.geo_groups)
+            (block.title, block.type, block.source, block.tags, block.source_id, block.integration_id, block.var_labels, block.geo_groups, block.description)
             )
         self.conn.commit()
 
-    #TODO: Receiver should be timeseries object. Transform Timeseries -> Dataframe in class method.
     def insert_timeseries(self, ts:objects.Timeseries):
         ts.df.to_sql(con=self.conn, name='timeseries', if_exists='append', index=False)
         self.conn.commit()
@@ -69,60 +88,36 @@ class db_conn:
         q = "SELECT %s FROM timeseries WHERE data_id = %i" % (objects.stringify_ts_columns(), data_id)
         df = pd.read_sql_query(q, self.conn)
         return objects.Timeseries(df)
-
-    def get_timeseries_by_id(self, data_id:int) -> objects.Timeseries:
-        print(data_id)
-        q = "SELECT %s FROM timeseries WHERE data_id = %i" % (objects.stringify_ts_columns(), data_id)
-        df = pd.read_sql_query(q, self.conn)
-        return objects.Timeseries(df)
     
-
-    def get_datablocks_by_field(self,name:str,value:str,operator:str)-> list[objects.NormalisedDataBlock]: 
+    def get_datablocks_by_filters(self, **filters):
         cur = self.conn.cursor()
-        cur.execute("""
-        SELECT data_id, type, source, source_id, tags, title, integration_id, var_labels, geo_groups
-        FROM data_block WHERE (%s) %s (?) AND geo_groups='C' ORDER BY RANDOM()
-        """ % (name, operator), (value,))
+        if not filters:
+            return []
+        q = 'SELECT * FROM data_block WHERE '
+        q = apply_filters(q, **filters)
+        cur.execute(q)
         rows = cur.fetchall()
-        return [
-            objects.NormalisedDataBlock(**{
-                "data_id": row["data_id"],
-                "type": row["type"],
-                "source": row["source"],
-                "source_id": row["source_id"],
-                "tags": row["tags"],
-                "title": row["title"],
-                "integration_id": row["integration_id"],
-                "var_labels": row["var_labels"],
-                "geo_groups": row["geo_groups"]})
-                for row in rows]
+        return dblock_from_rows(rows)
     
-    #Primitive as hell but works better than expected.
-    def get_datablocks_by_search(self,term:str)-> list[objects.NormalisedDataBlock]: 
+    #Primitive as hell but works suprisingly well
+    def get_datablocks_by_search(self,term:str, filters:dict)-> list[objects.NormalisedDataBlock]: 
+        term = '%'+term+'%'
+        q = "SELECT * FROM data_block WHERE (title LIKE (?) OR tags LIKE (?))"
+        if filters:
+            q += " AND "
+            q = apply_filters(q, **filters)
+        q = q + """
+                ORDER BY 
+                    CASE 
+                        WHEN title LIKE (?) THEN 1
+                        ELSE 2
+                    END
+                LIMIT 100
+                """
         cur = self.conn.cursor()
-        cur.execute("""
-        SELECT data_id, type, source, source_id, tags, title, integration_id, var_labels, geo_groups
-        FROM data_block WHERE title LIKE (?) OR tags LIKE (?) AND geo_groups='C' 
-        ORDER BY 
-            CASE 
-                WHEN title LIKE (?) THEN 1
-                ELSE 2
-            END
-        LIMIT 100
-        """, (term,term,term))
+        cur.execute(q, (term,term,term))
         rows = cur.fetchall()
-        return [
-            objects.NormalisedDataBlock(**{
-                "data_id": row["data_id"],
-                "type": row["type"],
-                "source": row["source"],
-                "source_id": row["source_id"],
-                "tags": row["tags"],
-                "title": row["title"],
-                "integration_id": row["integration_id"],
-                "var_labels": row["var_labels"],
-                "geo_groups": row["geo_groups"]})
-                for row in rows]
+        return dblock_from_rows(rows)
     
     #Rethink this, maybe... Should probably be stored in csv file and loaded into memory at startup
     def db_get_commune_ids(self) -> list:

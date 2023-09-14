@@ -1,4 +1,4 @@
-1;Stockholms län
+0001;Stockholms län
 0114;Upplands Väsby
 0115;Vallentuna
 0117;Österåker
@@ -25,7 +25,7 @@
 0188;Norrtälje
 0191;Sigtuna
 0192;Nynäshamn
-03;Uppsala län
+0003;Uppsala län
 0305;Håbo
 0319;Älvkarleby
 0330;Knivsta
@@ -34,7 +34,7 @@
 0380;Uppsala
 0381;Enköping
 0382;Östhammar
-04;Södermanlands län
+0004;Södermanlands län
 0428;Vingåker
 0461;Gnesta
 0480;Nyköping
@@ -44,7 +44,7 @@
 0484;Eskilstuna
 0486;Strängnäs
 0488;Trosa
-5;Östergötlands län
+0005;Östergötlands län
 0509;Ödeshög
 0512;Ydre
 0513;Kinda
@@ -58,7 +58,7 @@
 0583;Motala
 0584;Vadstena
 0586;Mjölby
-6;Jönköpings län
+0006;Jönköpings län
 0604;Aneby
 0617;Gnosjö
 0642;Mullsjö
@@ -72,7 +72,7 @@
 0685;Vetlanda
 0686;Eksjö
 0687;Tranås
-7;Kronobergs län
+0007;Kronobergs län
 0760;Uppvidinge
 0761;Lessebo
 0763;Tingsryd
@@ -81,7 +81,7 @@
 0767;Markaryd
 0780;Växjö
 0781;Ljungby
-8;Kalmar län
+0008;Kalmar län
 0821;Högsby
 0834;Torsås
 0840;Mörbylånga
@@ -94,15 +94,15 @@
 0883;Västervik
 0884;Vimmerby
 0885;Borgholm
-9;Gotlands län
+0009;Gotlands län
 0980;Gotland
-10;Blekinge län
+0010;Blekinge län
 1060;Olofström
 1080;Karlskrona
 1081;Ronneby
 1082;Karlshamn
 1083;Sölvesborg
-12;Skåne län
+0012;Skåne län
 1214;Svalöv
 1230;Staffanstorp
 1231;Burlöv
@@ -136,14 +136,14 @@
 1291;Simrishamn
 1292;Ängelholm
 1293;Hässleholm
-13;Hallands län
+0013;Hallands län
 1315;Hylte
 1380;Halmstad
 1381;Laholm
 1382;Falkenberg
 1383;Varberg
 1384;Kungsbacka
-14;Västra Götalands län
+0014;Västra Götalands län
 1401;Härryda
 1402;Partille
 1407;Öckerö
@@ -193,7 +193,7 @@
 1497;Hjo
 1498;Tidaholm
 1499;Falköping
-17;Värmlands län
+0017;Värmlands län
 1715;Kil
 1730;Eda
 1737;Torsby
@@ -210,7 +210,7 @@
 1783;Hagfors
 1784;Arvika
 1785;Säffle
-18;Örebro län
+0018;Örebro län
 1814;Lekeberg
 1860;Laxå
 1861;Hallsberg
@@ -223,7 +223,7 @@
 1883;Karlskoga
 1884;Nora
 1885;Lindesberg
-19;Västmanlands län
+0019;Västmanlands län
 1904;Skinnskatteberg
 1907;Surahammar
 1960;Kungsör
@@ -234,7 +234,7 @@
 1982;Fagersta
 1983;Köping
 1984;Arboga
-20;Dalarnas län
+0020;Dalarnas län
 2021;Vansbro
 2023;Malung-Sälen
 2026;Gagnef
@@ -250,7 +250,7 @@
 2083;Hedemora
 2084;Avesta
 2085;Ludvika
-21;Gävleborgs län
+0021;Gävleborgs län
 2101;Ockelbo
 2104;Hofors
 2121;Ovanåker
@@ -261,7 +261,7 @@
 2182;Söderhamn
 2183;Bollnäs
 2184;Hudiksvall
-22;Västernorrlands län
+0022;Västernorrlands län
 2260;Ånge
 2262;Timrå
 2280;Härnösand
@@ -269,7 +269,7 @@
 2282;Kramfors
 2283;Sollefteå
 2284;Örnsköldsvik
-23;Jämtlands län
+0023;Jämtlands län
 2303;Ragunda
 2305;Bräcke
 2309;Krokom
@@ -278,7 +278,7 @@
 2326;Berg
 2361;Härjedalen
 2380;Östersund
-24;Västerbottens län
+0024;Västerbottens län
 2401;Nordmaling
 2403;Bjurholm
 2404;Vindeln
@@ -294,7 +294,7 @@
 2480;Umeå
 2481;Lycksele
 2482;Skellefteå
-25;Norrbottens län
+0025;Norrbottens län
 2505;Arvidsjaur
 2506;Arjeplog
 2510;Jokkmokk

@@ -10,8 +10,7 @@ import dateutil.parser as parser
 def requestJsonBody(url):
     res = requests.get(url)
     if res.status_code!= 200:
-        print('Bad res:'+str(res.status_code))
-        return {}
+        raise ValueError("bad status code: " +res.status_code)
     return res.json()
 
 def parseDate(date_str:str) -> str:
@@ -25,15 +24,13 @@ def split_tags(tag_string:str) ->str:
     return re.sub(r',(?!\s)', ';', tag_string)
 
 #temp: cap to 10 until we figure out to collect ts in parallel...
-def get_commune_ids():
+def get_geo_ids():
     with open('integrations/files/geo_data.csv', 'r') as file:
         ids = []
         for line in file:
             key, value = line.strip().split(';')
-            if " län" in value:
-               continue
             ids.append(key)
-        return ids[:10]
+        return ids
 
 class BaseIntegration:
     base_url: str
@@ -67,12 +64,17 @@ class KoladaIntegration(BaseIntegration):
             page +=1
         return datablocks
     
+    """
+    It's messy, but give me a break! Normalising data 
+    from a proprietary API does not have to be pretty! 
+    Damnit, if you don't like it; come up with a fixing PR or shut up!
+    """
     def get_timeseries(self, dblocks:list[objects.NormalisedDataBlock])->objects.Timeseries:
         cols = {col : [] for col in objects.ts_cols}
-        communes = get_commune_ids()
+        id_list = get_geo_ids()
         for dblock in dblocks:
-            for commune_id in communes:
-                url = '%s/data/kpi/%s/municipality/%s' % (self.base_url, dblock.source_id, commune_id)
+            for geo_id in id_list:
+                url = '%s/data/kpi/%s/municipality/%s' % (self.base_url, dblock.source_id, geo_id)
                 data = requestJsonBody(url)
                 for year in data['values']:
                     datapoints = year['values']
@@ -107,6 +109,7 @@ class KoladaIntegration(BaseIntegration):
                 'source_id': value['id'],
                 'integration_id': self.integration_id,
                 'var_labels': 'Kön',
+                'description': value['description'],
                 'geo_groups': self.set_geo_group(value['municipality_type'])})
             for value in values]
     
