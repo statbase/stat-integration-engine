@@ -26,7 +26,7 @@ def datablocks_from_kolada_api(url) ->list:
             title=value["title"], 
             type="timeseries",
             source="Kolada",
-            category=str(value["operating_area"])+ "->"+ str(value["perspective"]),
+            tags=str(value["operating_area"])+ "->"+ str(value["perspective"]),
             source_id=value["id"]
         )
         for value in values
@@ -105,15 +105,15 @@ def db_upsert_datablocks(datablocks:list[objects.DataBlock]):
     cur = conn.cursor()
     for block in datablocks:
         cur.execute("""
-        INSERT INTO data_block(title, type, source, category, source_id)
+        INSERT INTO data_block(title, type, source, tags, source_id)
         VALUES (?, ?, ?, ?, ?)
         ON CONFLICT(source_id) DO UPDATE SET
         title = excluded.title,
         type = excluded.type,
         source = excluded.source,
-        category = excluded.category
+        tags = excluded.tags
         """,
-        (block.title, block.type, block.source, block.category, block.source_id)
+        (block.title, block.type, block.source, block.tags, block.source_id)
         )
     conn.commit()
     conn.close()

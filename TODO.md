@@ -1,3 +1,4 @@
 - Config instance to pass around, declare in main...
-- Fix date formatting
-- 
+- Store integrations in code
+- Add parameter to querying timeseries (list of geos)
+- Fetch TS in multiple threads (speed things up)  
