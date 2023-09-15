@@ -1,13 +1,15 @@
-import db.db as db
+import db.write as db
+import config.config as config
 import integrations.integrations as integrations
 
+db_str = config.get('db_string')
 """
 SCHEDULE THIS IN BATCHES
 1. Import datablocks from each integration
 2. Upsert datablocks to database
 """
 
-conn = db.db_conn("db/stat-db.db")
+conn = db.Writer(db_str)
 kolada = integrations.KoladaIntegration()
 
 #Get data from integration

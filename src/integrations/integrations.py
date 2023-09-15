@@ -1,7 +1,6 @@
 import objects.objects as objects
 import pandas as pd
 import requests
-import db.db as db
 import re
 
 import dateutil.parser as parser
@@ -17,8 +16,7 @@ def parseDate(date_str:str) -> str:
     #Only year -> day is 1st of january
     if len(str(date_str)) == 4:
         return str(date_str) + '-01-01'
-    else:
-        return parser.parse(str(date_str)).date()
+    return parser.parse(str(date_str)).date()
 
 def split_tags(tag_string:str) ->str:
     return re.sub(r',(?!\s)', ';', tag_string)
@@ -28,9 +26,9 @@ def get_geo_ids():
     with open('integrations/files/geo_data.csv', 'r') as file:
         ids = []
         for line in file:
-            key, value = line.strip().split(';')
-            ids.append(key)
-        return ids
+            id, name = line.strip().split(';')
+            ids.append(id)
+        return ids[:10]
 
 class BaseIntegration:
     base_url: str
@@ -38,10 +36,10 @@ class BaseIntegration:
     def __init__(self, url, id):
         self.base_url = url
         self.id = id
-    def get_datablocks(self, url: str)->objects.SourceDataBlock:
+    def get_datablocks(self)->list[objects.SourceDataBlock]:
         """get datablocks from source"""
         pass
-    def get_timeseries(self, dblock:objects.NormalisedDataBlock)->objects.Timeseries:
+    def get_timeseries(self, dblocks:list[objects.NormalisedDataBlock])->objects.Timeseries:
         """get timeseries data from source for datablock"""
         pass
 

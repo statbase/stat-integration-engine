@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 import pandas as pd
 from pydantic import BaseModel, Field
 
@@ -22,19 +21,13 @@ class SourceDataBlock(BaseModel):
 class NormalisedDataBlock(SourceDataBlock):
     data_id:int = Field(ge=1)
 
-class Entity:
-    def __init__(self, name: str, geo_id: int, id: int):
-        self.name = name
-        self.geo_id = geo_id
-        self.id = id
-
 class Timeseries:
     df:pd.DataFrame
 
     def __init__(self, df:pd.DataFrame):
         self.df=df
         self.verify()
-        
+
     def verify(self):
         if len(self.df.columns) != len(ts_cols):
             raise Exception("Invalid n. of columns, expected: %i, got:%i" % (len(ts_cols), len(self.df.columns)))
