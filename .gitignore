@@ -2,13 +2,4 @@
 lib*
 bin*
 .DS*
-*__pycache__*
-stat-db.sqbpro
-src/__pycache__/main.cpython-310.pyc
-src/api/__pycache__/routes.cpython-310.pyc
-src/db/stat-db.db
-src/db/__pycache__/db.cpython-310.pyc
-src/db/__pycache__/__init__.cpython-310.pyc
-src/integrations/__pycache__/integrations.cpython-310.pyc
-src/objects/__pycache__/objects.cpython-310.pyc
-src/tests/test.db
+*.pyc
