@@ -2,7 +2,8 @@ import sys
 import os
 sys.path.append(os.getcwd()) #Seems super hacky but import wont work otherwise. Damnit Python!
 import objects.objects as objects
-import db.db as db
+import db.write as dbwrite
+import db.read as dbread
 import sqlite3
 import unittest
 
@@ -28,7 +29,7 @@ class TestDbConn(unittest.TestCase):
             "integration_id":1,
             "var_labels":"Kön",
             "geo_groups":"C"}]
-        got = db.dblock_from_rows(row_list)
+        got = dbread.dblock_from_rows(row_list)
         want = [objects.NormalisedDataBlock(**{
             "data_id":1,
             "type":"timeseries",
@@ -47,14 +48,16 @@ class TestDbConn(unittest.TestCase):
         q = "SELECT * FROM table WHERE"
         filters = {"source":"Kolada", "a":"b", "tags":"test"}
         want = "SELECT * FROM table WHERE source = 'Kolada' AND a = 'b' AND tags LIKE '%test%'"
-        got = db.apply_filters(q=q,**filters)
+        got = dbread.apply_filters(q=q,**filters)
         self.assertEqual(got, want)
 
 
 class TestDbConn(unittest.TestCase):
     def test_get_all_tags(self):
+        #Prepare
         run_migration(sqlite3.connect(test_db))
-        conn = db.db_conn(test_db)
+
+        conn = dbwrite.Writer(test_db)
         blocks = [objects.SourceDataBlock(**{
             "type":"timeseries",
             "source":"Kolada",
@@ -67,13 +70,17 @@ class TestDbConn(unittest.TestCase):
             "var_labels":"Kön"})]
         conn.upsert_datablocks(blocks)
 
+        conn = dbread.Reader(test_db)
+        #Do
         got = conn.get_all_tags()
+
+        #Check
         want = {"A":1, "B":1}
         self.assertEqual(got, want)
 
     def test_datablocks_by_search(self):
         run_migration(sqlite3.connect(test_db))
-        conn = db.db_conn(test_db)
+        conn = dbwrite.Writer(test_db)
         blocks = [objects.SourceDataBlock(**{
             "type":"timeseries",
             "source":"Kolada",
@@ -86,6 +93,7 @@ class TestDbConn(unittest.TestCase):
             "var_labels":"Kön"})]
         conn.upsert_datablocks(blocks)
 
+        conn = dbread.Reader(test_db)
         got = conn.get_datablocks_by_search(term="a", filters={"geo_groups":"C", "source":"Kolada"})
         want = [objects.NormalisedDataBlock(**{            
             "type":"timeseries",

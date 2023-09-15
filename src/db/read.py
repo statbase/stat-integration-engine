@@ -29,13 +29,11 @@ def apply_filters(q:str, **filters):
     q = q[:-4]
     return q 
 
-class db_conn:
+class Reader:
     conn: sqlite3.Connection
     def __init__(self, db_path:str):
         self.conn = sqlite3.connect(db_path)
         self.conn.row_factory = sqlite3.Row  
-        self.conn.execute("PRAGMA foreign_keys = ON")
-        self.conn.commit()
 
     def close(self):
         self.conn.close()
@@ -60,30 +58,6 @@ class db_conn:
                    tag_counts[tag] = 1
         return dict(sorted(tag_counts.items(), key=lambda count: count[1], reverse=True))
     
-
-    def upsert_datablocks(self, datablocks:list[objects.SourceDataBlock]):
-        cur = self.conn.cursor()
-        for block in datablocks:
-            cur.execute("""
-            INSERT INTO data_block(title, type, source, tags, source_id, integration_id, var_labels, geo_groups, description)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-            ON CONFLICT(source_id) DO UPDATE SET
-            title = excluded.title,
-            type = excluded.type,
-            source = excluded.source,
-            tags = excluded.tags,      
-            var_labels = excluded.var_labels,
-            geo_groups = excluded.geo_groups,
-            description = excluded.description
-            """,
-            (block.title, block.type, block.source, block.tags, block.source_id, block.integration_id, block.var_labels, block.geo_groups, block.description)
-            )
-        self.conn.commit()
-
-    def insert_timeseries(self, ts:objects.Timeseries):
-        ts.df.to_sql(con=self.conn, name='timeseries', if_exists='append', index=False)
-        self.conn.commit()
-
     def get_timeseries_by_id(self, data_id:int) -> objects.Timeseries:
         q = "SELECT %s FROM timeseries WHERE data_id = %i" % (objects.stringify_ts_columns(), data_id)
         df = pd.read_sql_query(q, self.conn)
@@ -106,7 +80,7 @@ class db_conn:
         if filters:
             q += " AND "
             q = apply_filters(q, **filters)
-        q = q + """
+        q +=   """
                 ORDER BY 
                     CASE 
                         WHEN title LIKE (?) THEN 1
@@ -118,12 +92,3 @@ class db_conn:
         cur.execute(q, (term,term,term))
         rows = cur.fetchall()
         return dblock_from_rows(rows)
-    
-    #Rethink this, maybe... Should probably be stored in csv file and loaded into memory at startup
-    def db_get_commune_ids(self) -> list:
-        cur = self.conn.cursor()
-        cur.execute('SELECT geo_id FROM geo_unit WHERE type = "commune" ORDER BY RANDOM() LIMIT 10')
-        rows = cur.fetchall()
-        id_list = [row[0] for row in rows]
-        return id_list
-    
