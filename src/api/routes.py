@@ -1,14 +1,20 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, HTTPException
 import objects.objects as objects
 import db.read as dbread
 import db.write as dbwrite
 import json
-import integrations.integrations as integrations
+import pandas as pd
+import integrations.kolada as k
+import integrations.integrations as i
 import config.config as config
 
+
 router = APIRouter()
-kolada = integrations.KoladaIntegration()
+kolada = k.KoladaIntegration()
+geo_cache = i.GeoCache()
 db_str = config.get("db_string")
+dbreader = dbread.Reader
+dbwriter = dbwrite.Writer
 
 """
 HELPERS
@@ -44,7 +50,7 @@ def db_write(func:callable, *args, **kwargs):
     return res
 
 #Some would say this is hacky. I call it pragmatic! 
-def parse_filter(filter:str) -> dict: 
+def parse_datablock_filter(filter:str) -> dict: 
     out = {}
     kwarg_list = filter.split(',')
     for kwarg in kwarg_list:
@@ -56,6 +62,16 @@ def parse_filter(filter:str) -> dict:
         out[key] = val
     return out
 
+#TODO: make sure format is right, verify each geo_id
+def parse_geo_ids(filter:str) -> list[str]: 
+    if len(filter) > 50: #10 geo_ids + comma
+        raise ValueError("to many characters in geo_ids filter (50 max)")
+    geo_list = [id for id in filter.split(',')]
+    for id in geo_list:
+        if id not in geo_cache.get_geo_ids():
+           raise ValueError("illegal geo_id provided")
+    return geo_list
+   
 """
 HTTP HANDLERS 
 """
@@ -67,28 +83,30 @@ async def get_datablocks_for_tags():
 # If we don't have the timeseries, fetch it via integration and upload to db. 
 # Yes, this can be GREATLY improved...
 @router.get("/timeseries/{data_id}")
-async def get_timeseries_by_id(data_id:int):
-    ts = db_read(dbread.Reader.get_timeseries_by_id, data_id)
-    if len(ts.df)==0:
-        dblock = dbread(dbread.Reader.get_datablocks_by_filters, data_id=data_id)
-        ts = kolada.get_timeseries(dblock)
-        db_write(dbwrite.Writer.insert_timeseries, ts)
+async def get_timeseries_by_id(data_id:int, geo_ids:str):
+    id_list = parse_geo_ids(geo_ids)
+    ts, missing_ids = db_read(dbreader.get_timeseries, data_id, id_list)
+    if missing_ids:
+        dblock_list = db_read(dbreader.get_datablocks_by_filters, data_id=data_id)
+        fetched_ts = kolada.get_timeseries(dblock_list[0], missing_ids) #List should only contain 1 entry
+        db_write(dbwriter.insert_timeseries, fetched_ts)
+        ts.df = pd.concat([ts.df, fetched_ts.df])
     return json.loads(ts.df.to_json(orient="records"))
 
 @router.get("/datablocks/tag/{tag}")
 async def get_datablocks_by_tag(tag:str):
-    res = db_read(dbread.Reader.get_datablocks_by_filters,tags=tag)
+    res = db_read(dbreader.get_datablocks_by_filters,tags=tag)
     return res
 
 @router.get("/datablocks/{id}")
 async def get_datablocks_by_id(id:int):
-    res = db_read(dbread.Reader.get_datablocks_by_filters,data_id=id)
+    res = db_read(dbreader.get_datablocks_by_filters,data_id=id)
     return res
 
 @router.get("/datablocks/search/{string}")
 async def get_datablocks_by_search_string(string:str, filter:str | None=None):
     kwargs = None
-    if filter is not None:  
-       kwargs = parse_filter(filter)
-    res = db_read(dbread.Reader.get_datablocks_by_search,string, kwargs)
+    if filter:  
+       kwargs = parse_datablock_filter(filter)
+    res = db_read(dbreader.get_datablocks_by_search,string, kwargs)
     return res

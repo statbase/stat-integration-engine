@@ -39,6 +39,7 @@ class Reader:
         self.conn.close()
 
     """
+    TODO:
     This is more expensive than it should be. 
     Consider either storing the tag + tag-datablock relations in separate tables instead
     Alternatively, load & cache this bad boy at startup. It ain't expected to change much during runtime, anyhow.
@@ -58,12 +59,24 @@ class Reader:
                    tag_counts[tag] = 1
         return dict(sorted(tag_counts.items(), key=lambda count: count[1], reverse=True))
     
-    def get_timeseries_by_id(self, data_id:int) -> objects.Timeseries:
-        q = "SELECT %s FROM timeseries WHERE data_id = %i" % (objects.stringify_ts_columns(), data_id)
-        df = pd.read_sql_query(q, self.conn)
-        return objects.Timeseries(df)
+    def get_timeseries(self, data_id:int, geo_list:list[str]) -> tuple[objects.Timeseries, list[str]]:
+        ts_columns = objects.stringify_ts_columns()
+        placeholders = ','.join(['?'] * len(geo_list))
+        if geo_list:
+            q = f"SELECT {ts_columns} FROM timeseries WHERE data_id = ? AND geo_id IN ({placeholders})"
+            params = [data_id] + geo_list
+        else:
+            q = f"SELECT {ts_columns} FROM timeseries WHERE data_id = ?"
+            params = [data_id]
+        
+        df = pd.read_sql_query(q, self.conn, params=params)
+        #TODO: figure out more efficient way to do this
+        found_geo_ids = set(df['geo_id'].tolist())
+        missing_geo_ids = [geo_id for geo_id in geo_list if geo_id not in found_geo_ids]
+
+        return objects.Timeseries(df), missing_geo_ids
     
-    def get_datablocks_by_filters(self, **filters):
+    def get_datablocks_by_filters(self, filters:dict):
         cur = self.conn.cursor()
         if not filters:
             return []

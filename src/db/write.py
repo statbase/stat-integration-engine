@@ -1,7 +1,5 @@
 import sqlite3
 import objects.objects as objects
-import pandas as pd
-
 
 class Writer:
     conn: sqlite3.Connection

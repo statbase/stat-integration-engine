@@ -1,6 +1,6 @@
 import db.write as db
 import config.config as config
-import integrations.integrations as integrations
+import integrations.kolada as k
 
 db_str = config.get('db_string')
 """
@@ -10,7 +10,7 @@ SCHEDULE THIS IN BATCHES
 """
 
 conn = db.Writer(db_str)
-kolada = integrations.KoladaIntegration()
+kolada = k.KoladaIntegration()
 
 #Get data from integration
 source_blocks = kolada.get_datablocks()

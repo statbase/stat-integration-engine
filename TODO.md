@@ -1,4 +1,3 @@
-- Config instance to pass around, declare in main...
 - Store integrations in code
-- Add parameter to querying timeseries (list of geos)
+- Add parameter to querying timeseries (list of geos(10 max))
 - Fetch TS in multiple threads (speed things up)  

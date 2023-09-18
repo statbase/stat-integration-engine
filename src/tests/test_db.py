@@ -9,7 +9,7 @@ import unittest
 
 test_db = "tests/test.db"
 
-def run_migration(conn: sqlite3.Connection):
+def run_schema_migration(conn: sqlite3.Connection):
     cursor = conn.cursor()
     with open('db/migrations/database_schema.sql', 'r') as file:
         sql = file.read()
@@ -55,7 +55,7 @@ class TestDbConn(unittest.TestCase):
 class TestDbConn(unittest.TestCase):
     def test_get_all_tags(self):
         #Prepare
-        run_migration(sqlite3.connect(test_db))
+        run_schema_migration(sqlite3.connect(test_db))
 
         conn = dbwrite.Writer(test_db)
         blocks = [objects.SourceDataBlock(**{
@@ -79,7 +79,7 @@ class TestDbConn(unittest.TestCase):
         self.assertEqual(got, want)
 
     def test_datablocks_by_search(self):
-        run_migration(sqlite3.connect(test_db))
+        run_schema_migration(sqlite3.connect(test_db))
         conn = dbwrite.Writer(test_db)
         blocks = [objects.SourceDataBlock(**{
             "type":"timeseries",
