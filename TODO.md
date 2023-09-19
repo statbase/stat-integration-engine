@@ -1,3 +1,7 @@
 - Store integrations in code
-- Add parameter to querying timeseries (list of geos(10 max))
 - Fetch TS in multiple threads (speed things up)  
+- Proper api validation + error handling
+- Objects -> Models
+- Define metadata attributes + calculate from db
+- Pycharm!
+- Retrieve data from SE  -> calculate (weighted?) average for all municipalities

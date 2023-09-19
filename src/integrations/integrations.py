@@ -1,54 +1,52 @@
-import objects.objects as objects
-import pandas as pd
+import src.objects.models as models
 import requests
 import re
 
 import dateutil.parser as parser
 
+
 class GeoCache:
     def __init__(self):
         self.ids = None
-    def get_geo_ids(self):
+
+    def get_id_list(self):
         if self.ids is None:
             with open('integrations/files/geo_data.csv', 'r') as file:
                 self.ids = [line.strip().split(';')[0] for line in file]
         return self.ids
 
-#Helpers
+
+# Helpers
 def requestJsonBody(url):
     res = requests.get(url)
-    if res.status_code!= 200:
-        raise ValueError("bad status code: " +res.status_code)
+    if res.status_code != 200:
+        raise ValueError("bad status code: " + res.status_code)
     return res.json()
 
-def parseDate(date_str:str) -> str:
-    #Only year -> day is 1st of january
+
+def parseDate(date_str: str) -> str:
+    # Only year -> day is 1st of january
     if len(str(date_str)) == 4:
         return str(date_str) + '-01-01'
     return parser.parse(str(date_str)).date()
 
-def split_tags(tag_string:str) ->str:
+
+def split_tags(tag_string: str) -> str:
     return re.sub(r',(?!\s)', ';', tag_string)
 
-#temp: cap to 10 until we figure out to collect ts in parallel...
-def get_geo_ids():
-    with open('integrations/files/geo_data.csv', 'r') as file:
-        ids = []
-        for line in file:
-            id, name = line.strip().split(';')
-            ids.append(id)
-        return ids[:10]
 
 class BaseIntegration:
     base_url: str
     integration_id: int
+
     def __init__(self, url, id):
         self.base_url = url
         self.id = id
-    def get_datablocks(self)->list[objects.SourceDataBlock]:
+
+    def get_datablocks(self) -> list[models.SourceDataBlock]:
         """get datablocks from source"""
         pass
-    def get_timeseries(self, dblock:objects.NormalisedDataBlock)->objects.Timeseries:
+
+    def get_timeseries(self, dblock: models.NormalisedDataBlock) -> models.Timeseries:
         """get timeseries data from source for datablock"""
         pass
-

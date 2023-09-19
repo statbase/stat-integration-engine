@@ -12,12 +12,12 @@ SCHEDULE THIS IN BATCHES
 conn = db.Writer(db_str)
 kolada = k.KoladaIntegration()
 
-#Get data from integration
-source_blocks = kolada.get_datablocks()
+# Get data from integration
+datablock_list = kolada.get_datablocks()
 
-#Verify blocks with my super advanced algorithm
-if len(source_blocks) < 6000:
+# Verify blocks with my super advanced algorithm
+if len(datablock_list) < 6000:
     exit("Where's the KPI's, Kolada!? Why you gotta do me like this? Thought we were friends...")
 
-#Insert the datablocks and do the normalisation magic
-conn.upsert_datablocks(source_blocks)
+# Insert the datablocks and do the normalisation magic
+conn.upsert_datablocks(datablock_list)
