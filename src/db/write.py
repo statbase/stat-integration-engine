@@ -1,5 +1,6 @@
 import sqlite3
-import src.objects.models as objects
+import json
+import src.models.models as models
 
 
 class Writer:
@@ -13,7 +14,7 @@ class Writer:
     def close(self):
         self.conn.close()
 
-    def upsert_datablocks(self, datablocks: list[objects.SourceDataBlock]):
+    def upsert_datablocks(self, datablocks: list[models.SourceDataBlock]):
         cur = self.conn.cursor()
         for block in datablocks:
             cur.execute("""
@@ -33,6 +34,19 @@ class Writer:
                         )
         self.conn.commit()
 
-    def insert_timeseries(self, ts: objects.Timeseries):
+    def insert_timeseries(self, ts: models.Timeseries):
         ts.df.to_sql(con=self.conn, name='timeseries', if_exists='append', index=False)
+        self.conn.commit()
+
+    def update_meta(self, data_id: int, meta: dict):
+        meta_json = json.dumps(meta)
+        q = "UPDATE data_block SET meta = ? WHERE data_id = ?"
+        cur = self.conn.cursor()
+        cur.execute(q, (meta_json, data_id))
+        self.conn.commit()
+
+    def clear_timeseries_for_integration(self, integration_id: int):
+        q = 'DELETE FROM timeseries WHERE data_id IN (SELECT data_id FROM data_block WHERE integration_id = (?))'
+        cur = self.conn.cursor()
+        cur.execute(q, (integration_id,))
         self.conn.commit()

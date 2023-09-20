@@ -1,7 +1,10 @@
-- Store integrations in code
-- Fetch TS in multiple threads (speed things up)  
-- Proper api validation + error handling
-- Objects -> Models
-- Define metadata attributes + calculate from db
-- Pycharm!
-- Retrieve data from SE  -> calculate (weighted?) average for all municipalities
+- Store integrations in code (as BaseIntegration), loop through instead 
+of explicitly calling Kolada
+- Fetch ts for communes in multiple threads (speed things up)  
+- Add proper logger + use it for errors and warnings
+- Write missing tests for functions
+- Fix relative paths so files can be run from wherever
+- Figure out how to get data from SE -> calculate (weighted?) average for all municipalities
+- Add Auth service + Bearer token validation
+- Add basic ratelimiter for incoming requests
+- Try running the app within docker

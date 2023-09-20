@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException
-import src.objects.models as models
+import src.models.models as models
 import src.db.read as dbread
 import src.db.write as dbwrite
 import json
@@ -14,6 +14,7 @@ geo_cache = i.GeoCache()
 db_str = config.get("db_string")
 dbreader = dbread.Reader
 dbwriter = dbwrite.Writer
+
 
 
 def db_read(func: callable, *args, **kwargs):
@@ -55,14 +56,13 @@ def parse_datablock_filter(filter: str) -> dict:
     for kwarg in kwarg_list:
         key, val = kwarg.split('=', 1)
         if key not in models.SourceDataBlock.__annotations__:  # Okay, this is pretty hacky...
-            raise ValueError("key not in SourceDataBlock")
+            raise ValueError(f"invalid filter key: '{key}'")
         if len(val) == 0:
-            raise ValueError("len(val) is 0")
+            raise ValueError("length of filter value is 0")
         out[key] = val
     return out
 
 
-# TODO: make sure format is right, verify each geo_id
 def parse_geo_ids(id_list: str) -> list[str]:
     if len(id_list) > 50:  # 10 geo_ids + comma
         raise ValueError("to many characters in geo_ids filter (>50)")
@@ -83,28 +83,40 @@ async def get_datablocks_for_tags():
 
 
 # If we don't have the timeseries, fetch it via integration and upload to db. 
-# Yes, this can be GREATLY improved...
+# Yes, this can be improved...
 @router.get("/timeseries/{data_id}")
 async def get_timeseries_by_id(data_id: int, geo_ids: str):
-    id_list = parse_geo_ids(geo_ids)
-    ts, missing_ids = db_read(dbreader.get_timeseries, data_id, id_list)
-    if missing_ids:
-        dblock_list = db_read(dbreader.get_datablocks_by_filters, data_id=data_id)
-        fetched_ts = kolada.get_timeseries(dblock_list[0], missing_ids)  # List should only contain 1 entry
-        db_write(dbwriter.insert_timeseries, fetched_ts)
-        ts.df = pd.concat([ts.df, fetched_ts.df])
+    try:
+        id_list = parse_geo_ids(geo_ids)
+    except ValueError as e:
+        return HTTPException(422, e)
+    try:
+        ts, missing_ids = db_read(dbreader.get_timeseries, data_id, id_list)
+        if missing_ids:
+            dblock_list = db_read(dbreader.get_datablocks_by_filters, data_id=data_id)
+            fetched_ts = kolada.get_timeseries(dblock_list[0], missing_ids)  # List should only contain 1 entry
+            db_write(dbwriter.insert_timeseries, fetched_ts)
+            ts.df = pd.concat([ts.df, fetched_ts.df])
+    except Exception as e:
+        return HTTPException(500, detail=str(e))
     return json.loads(ts.df.to_json(orient="records"))
 
 
 @router.get("/datablocks/tag/{tag}")
 async def get_datablocks_by_tag(tag: str):
-    res = db_read(dbreader.get_datablocks_by_filters, tags=tag)
+    try:
+        res = db_read(dbreader.get_datablocks_by_filters, tags=tag)
+    except Exception as e:
+        return HTTPException(500, detail=str(e))
     return res
 
 
 @router.get("/datablocks/{id}")
 async def get_datablocks_by_id(id: int):
-    res = db_read(dbreader.get_datablocks_by_filters, data_id=id)
+    try:
+        res = db_read(dbreader.get_datablocks_by_filters, data_id=id)
+    except Exception as e:
+        return HTTPException(500, detail=str(e))
     return res
 
 
@@ -112,6 +124,12 @@ async def get_datablocks_by_id(id: int):
 async def get_datablocks_by_search_string(string: str, filter: str | None = None):
     kwargs = None
     if filter:
-        kwargs = parse_datablock_filter(filter)
-    res = db_read(dbreader.get_datablocks_by_search, string, kwargs)
+        try:
+            kwargs = parse_datablock_filter(filter)
+        except ValueError as e:
+            return HTTPException(422, detail=str(e))
+    try:
+        res = db_read(dbreader.get_datablocks_by_search, string, **kwargs)
+    except Exception as e:
+        return HTTPException(500, detail=str(e))
     return res
