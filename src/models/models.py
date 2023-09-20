@@ -14,7 +14,7 @@ class SourceDataBlock(BaseModel):
     type: str = Field(..., min_length=1)
     source: str = Field(..., min_length=1)
     source_id: str = Field(..., min_length=1)
-    tags: str = Field(..., )
+    tags: str | list[str] = Field(..., )
     integration_id: int = Field(..., ge=1)
     var_labels: str = Field(..., min_length=1)
     geo_groups: str = Field(..., min_length=1)
@@ -23,7 +23,7 @@ class SourceDataBlock(BaseModel):
 
 class NormalisedDataBlock(SourceDataBlock):
     data_id: int = Field(ge=1)
-    meta: dict | None = Field(..., )
+    meta: dict = Field()
 
 
 class Timeseries:

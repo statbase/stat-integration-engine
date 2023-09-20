@@ -1,6 +1,29 @@
 import src.integrations.integrations as i
-import src.objects.models as models
+import src.models.models as models
 import pandas as pd
+import re
+
+
+def set_geo_group(label: str):
+    if label == 'L':
+        return 'R'
+    if label == 'A':
+        return 'A'
+    return 'C'
+
+
+def set_variable(var: str):
+    if var == 'T':
+        return 'Totalt'
+    if var == 'M':
+        return 'Män'
+    if var == 'K':
+        return 'Kvinnor'
+    return var
+
+
+def split_tags(tag_string: str) -> str:
+    return re.sub(r',(?!\s)', ';', tag_string)
 
 
 class KoladaIntegration(i.BaseIntegration):
@@ -32,7 +55,11 @@ class KoladaIntegration(i.BaseIntegration):
         cols = {col: [] for col in models.ts_cols}
         for geo_id in geo_list:
             url = '%s/data/kpi/%s/municipality/%s' % (self.base_url, dblock.source_id, geo_id)
-            data = i.requestJsonBody(url)
+            try:
+                data = i.request_json(url)
+            except Exception as e:
+                print(f'requesting json from API failed: {e}')
+                continue
             for year in data['values']:
                 datapoints = year['values']
                 for datapoint in datapoints:
@@ -41,8 +68,8 @@ class KoladaIntegration(i.BaseIntegration):
                         continue
                     cols['data_id'].append(dblock.data_id)
                     cols['value'].append(measure_val)
-                    cols['variable'].append(self.set_variable(datapoint['gender']))
-                    date = i.parseDate(year['period'])
+                    cols['variable'].append(set_variable(datapoint['gender']))
+                    date = i.parse_date(year['period'])
                     cols['date'].append(date)
                     # clean stupid municipality code (seriously Kolada, why do you make me do this!???)
                     geo_id = year['municipality']
@@ -53,7 +80,7 @@ class KoladaIntegration(i.BaseIntegration):
         return models.Timeseries(df)
 
     def datablocks_from_kolada_endpoint(self, url) -> list:
-        data = i.requestJsonBody(url)
+        data = i.request_json(url)
         if data['count'] == 0:
             return []
         values = data['values']
@@ -62,26 +89,11 @@ class KoladaIntegration(i.BaseIntegration):
                 'title': value['title'],
                 'type': 'timeseries',
                 'source': 'Kolada',
-                'tags': i.split_tags(str(value['perspective'])) + ';' + i.split_tags(str(value['operating_area'])),
+                'tags': split_tags(str(value['perspective'])) + ';' + split_tags(str(value['operating_area'])),
                 'source_id': value['id'],
                 'integration_id': self.integration_id,
                 'var_labels': 'Kön',
                 'description': value['description'],
-                'geo_groups': self.set_geo_group(value['municipality_type'])})
+                'geo_groups': set_geo_group(value['municipality_type'])})
             for value in values]
 
-    def set_geo_group(self, label: str):
-        if label == 'L':
-            return 'R'
-        if label == 'A':
-            return 'A'
-        return 'C'
-
-    def set_variable(self, var: str):
-        if var == 'T':
-            return 'Totalt'
-        if var == 'M':
-            return 'Män'
-        if var == 'K':
-            return 'Kvinnor'
-        return var

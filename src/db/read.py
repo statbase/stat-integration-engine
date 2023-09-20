@@ -1,23 +1,24 @@
 import sqlite3
-import src.objects.models as models
+import src.models.models as models
 import pandas as pd
+import json
 
 
-def dblock_from_rows(rows: list) -> list[models.NormalisedDataBlock]:
+def dblock_from_row_list(row_list: list) -> list[models.NormalisedDataBlock]:
     return [
         models.NormalisedDataBlock(**{
             "data_id": row["data_id"],
             "type": row["type"],
             "source": row["source"],
             "source_id": row["source_id"],
-            "tags": row["tags"],
+            "tags": str(row["tags"]).split(';'),
             "title": row["title"],
             "description": row["description"],
             "integration_id": row["integration_id"],
             "var_labels": row["var_labels"],
             "geo_groups": row["geo_groups"],
-            "meta": row["meta"]})
-        for row in rows]
+            "meta": json.loads((row['meta']))})
+        for row in row_list]
 
 
 def apply_filters(q: str, **filters):
@@ -51,10 +52,10 @@ class Reader:
     def get_all_tags(self) -> dict[str:str]:
         tag_counts = {}
         cur = self.conn.cursor()
-        cur.execute('SELECT distinct tags from data_block')
+        cur.execute('SELECT tags from data_block')
         self.conn.commit()
-        rows = cur.fetchall()
-        for row in rows:
+        row_list = cur.fetchall()
+        for row in row_list:
             tags = str(row['tags']).split(';')
             for tag in tags:
                 if tag in tag_counts.keys():
@@ -80,21 +81,47 @@ class Reader:
 
         return models.Timeseries(df), missing_geo_ids
 
-    def get_datablocks_by_filters(self, filters: dict):
+    def get_datablocks_by_filters(self, **filters):
         cur = self.conn.cursor()
         if not filters:
             return []
         q = 'SELECT * FROM data_block WHERE '
         q = apply_filters(q, **filters)
         cur.execute(q)
-        rows = cur.fetchall()
-        return dblock_from_rows(rows)
+        row_list = cur.fetchall()
+        return dblock_from_row_list(row_list)
 
+    # Works assuming we have complete timeseries for at least 1 geo_id
     def calculate_meta(self, data_id: int) -> dict:
+        def calculate_span(row_list: list) -> str:
+            return row_list[0]['date'] + '-' + row_list[-1]['date']
+
+        def calculate_resolution(row_list: list) -> str:
+            return 'year'
+
+        def calculate_var_values(row_list: list) -> list[str]:
+            return [row['variable'] for row in row_list]
+
+        meta = {}
         cur = self.conn.cursor()
+        date_q = 'SELECT DISTINCT date FROM timeseries WHERE data_id = (?) ORDER BY date'
+        var_q = 'SELECT DISTINCT variable FROM timeseries WHERE data_id = (?)'
+
+        cur.execute(date_q, (data_id,))
+        row_list = cur.fetchall()
+        if not row_list:
+            raise FileNotFoundError('no timeseries found')
+        meta['span'] = calculate_span(row_list)
+        meta['resolution'] = calculate_resolution(row_list)
+
+        cur.execute(var_q, (data_id,))
+        row_list = cur.fetchall()
+        meta['var_values'] = calculate_var_values(row_list)
+
+        return meta
 
     # Primitive as hell but works surprisingly well
-    def get_datablocks_by_search(self, term: str, filters: dict) -> list[models.NormalisedDataBlock]:
+    def get_datablocks_by_search(self, term: str, **filters) -> list[models.NormalisedDataBlock]:
         term = '%' + term + '%'
         q = "SELECT * FROM data_block WHERE (title LIKE (?) OR tags LIKE (?))"
         if filters:
@@ -110,5 +137,5 @@ class Reader:
                 """
         cur = self.conn.cursor()
         cur.execute(q, (term, term, term))
-        rows = cur.fetchall()
-        return dblock_from_rows(rows)
+        row_list = cur.fetchall()
+        return dblock_from_row_list(row_list)
