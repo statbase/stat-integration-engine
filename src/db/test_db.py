@@ -8,6 +8,9 @@ import unittest
 
 test_db = "test.db"
 
+def delete_db():
+    if os.path.exists("test.db"):
+        os.remove("test.db")
 
 def delete_db():
     if os.path.exists("test.db"):
@@ -58,6 +61,7 @@ class TestDbRead(unittest.TestCase):
     def tearDown(self):
         delete_db()
 
+
     def test_get_all_tags(self):
         conn = dbwrite.Writer(test_db)
         blocks = [models.SourceDataBlock(**{
@@ -76,7 +80,7 @@ class TestDbRead(unittest.TestCase):
         got = conn.get_all_tags()
         want = {"A": 1, "B": 1}
         self.assertEqual(got, want)
-"""
+        
     def test_datablocks_by_search(self):
         writer = dbwrite.Writer(test_db)
         blocks = [models.SourceDataBlock(**{
