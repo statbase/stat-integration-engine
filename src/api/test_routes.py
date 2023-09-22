@@ -35,6 +35,7 @@ class TestRoutes(unittest.TestCase):
 
         res = client.get("/tags")
         self.assertEqual(res.status_code, 200)
+        self.assertEqual(mock_db_read.return_value, res.json())
 
 
 if __name__ == '__main__':
