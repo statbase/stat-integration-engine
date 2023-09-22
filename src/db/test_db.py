@@ -1,25 +1,20 @@
 import src.models.models as models
 import src.db.write as dbwrite
 import src.db.read as dbread
+import src.db.scripts.run_migration as mig
 import os
 import sqlite3
 import unittest
 
 test_db = "test.db"
 
-
 def delete_db():
     if os.path.exists("test.db"):
         os.remove("test.db")
 
-
-def run_schema_migration(conn: sqlite3.Connection):
-    cursor = conn.cursor()
-    with open('db/migrations/database_schema.sql', 'r') as file:
-        sql = file.read()
-        cursor.executescript(sql)
-        conn.commit()
-
+def delete_db():
+    if os.path.exists("test.db"):
+        os.remove("test.db")
 
 class TestHelper(unittest.TestCase):
     def test_dblock_from_row_list(self):
@@ -61,10 +56,11 @@ class TestHelper(unittest.TestCase):
 
 class TestDbRead(unittest.TestCase):
     def setUp(self):
-        run_schema_migration(sqlite3.connect(test_db))
+        mig.run_schema_migration(sqlite3.connect(test_db))
 
     def tearDown(self):
         delete_db()
+
 
     def test_get_all_tags(self):
         conn = dbwrite.Writer(test_db)
@@ -84,9 +80,8 @@ class TestDbRead(unittest.TestCase):
         got = conn.get_all_tags()
         want = {"A": 1, "B": 1}
         self.assertEqual(got, want)
-
+        
     def test_datablocks_by_search(self):
-        run_schema_migration(sqlite3.connect(test_db))
         writer = dbwrite.Writer(test_db)
         blocks = [models.SourceDataBlock(**{
             "type": "timeseries",
@@ -115,7 +110,7 @@ class TestDbRead(unittest.TestCase):
             "var_labels": "Kön",
             "meta": {}})]
         self.assertEqual(got, want)
-
+"""
 
 if __name__ == '__main__':
     unittest.main()

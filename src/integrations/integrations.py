@@ -1,6 +1,5 @@
 import src.models.models as models
 import requests
-import re
 
 import dateutil.parser as parser
 

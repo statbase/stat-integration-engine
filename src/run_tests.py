@@ -12,7 +12,6 @@ def run_tests():
     if result.wasSuccessful():
         print("All tests passed.")
     else:
-        print("Some tests failed.")
         exit(1)
 
 

@@ -1,9 +1,6 @@
 import sqlite3
 import re
-import sys
-import os
-sys.path.append(os.getcwd()) 
-import config.config as config
+import src.config.config as config
 
 communes = {}
 regions = {}
@@ -18,7 +15,7 @@ CREATE TABLE "geo_unit" (
 """
 delete_table = 'DROP TABLE IF EXISTS geo_unit'
 
-#Reset schema
+# Reset schema
 conn = sqlite3.connect(config.get('db_string'))
 cur = conn.cursor()
 cur.execute(delete_table)
@@ -33,19 +30,17 @@ with open('db/scripts/geo_data.csv', 'r') as file:
         else:
             communes[key] = value
 
-#Upload communes
+# Upload communes
 for id, name in communes.items():
     cur.execute("""INSERT INTO geo_unit (geo_id, type, name) 
                     VALUES (?, ?, ?)""",
-                    (id,"commune", name))
+                (id, "commune", name))
 
-#Upload regions
+# Upload regions
 for id, name in regions.items():
     cur.execute("""INSERT INTO geo_unit (geo_id, type, name) 
                     VALUES (?, ?, ?)""",
-                    (id,"region", name))
-    
+                (id, "region", name))
+
 conn.commit()
 conn.close()
-
-print("let's hope everything worked :)")

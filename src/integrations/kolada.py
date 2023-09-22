@@ -58,7 +58,7 @@ class KoladaIntegration(i.BaseIntegration):
             try:
                 data = i.request_json(url)
             except Exception as e:
-                print(f'requesting json from API failed: {e}')
+                print(f'requesting json from API failed: {str(e)}')
                 continue
             for year in data['values']:
                 datapoints = year['values']
