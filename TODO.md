@@ -8,8 +8,4 @@ of explicitly calling Kolada
 - Add Auth service + Bearer token validation
 - Add basic ratelimiter for incoming requests
 - Try running the app within docker
-- Fetch communes in multiple threads (speed things up)  
-- Add proper logger + use it for errors and warnings
-- Write missing tests for functions
-- Fix relative paths so tests can run from wherever
-- Figure out how to get data from SE -> calculate (weighted?) average for all municipalities
+
