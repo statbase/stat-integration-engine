@@ -13,6 +13,7 @@ def delete_db():
     if os.path.exists("test.db"):
         os.remove("test.db")
 
+
 class TestHelper(unittest.TestCase):
     def test_dblock_from_row_list(self):
         row_list = [{
@@ -76,8 +77,38 @@ class TestDbRead(unittest.TestCase):
         got = conn.get_all_tags()
         want = {"A": 1, "B": 1}
         self.assertEqual(got, want)
-"""
+
     def test_datablocks_by_search(self):
+        writer = dbwrite.Writer(test_db)
+        blocks = [models.SourceDataBlock(**{
+            "type": "timeseries",
+            "source": "Kolada",
+            "source_id": "A343434",
+            "tags": "A;B",
+            "title": "a",
+            "description": "test_description",
+            "integration_id": 1,
+            "geo_groups": "C",
+            "var_labels": "Kön"})]
+        writer.upsert_datablocks(blocks)
+
+        reader = dbread.Reader(test_db)
+        got = reader.get_datablocks_by_search(term="a")
+        want = [models.NormalisedDataBlock(**{
+            "type": "timeseries",
+            "source": "Kolada",
+            "source_id": "A343434",
+            "tags": ['A', 'B'],
+            "title": "a",
+            "description": "test_description",
+            "integration_id": 1,
+            "geo_groups": "C",
+            "data_id": 1,
+            "var_labels": "Kön",
+            "meta": {}})]
+        self.assertEqual(got, want)
+
+    def test_datablocks_by_search_filters(self):
         writer = dbwrite.Writer(test_db)
         blocks = [models.SourceDataBlock(**{
             "type": "timeseries",
@@ -106,7 +137,7 @@ class TestDbRead(unittest.TestCase):
             "var_labels": "Kön",
             "meta": {}})]
         self.assertEqual(got, want)
-"""
+
 
 if __name__ == '__main__':
     unittest.main()

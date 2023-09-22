@@ -8,3 +8,4 @@ of explicitly calling Kolada
 - Add Auth service + Bearer token validation
 - Add basic ratelimiter for incoming requests
 - Try running the app within docker
+
