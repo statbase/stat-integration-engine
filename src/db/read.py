@@ -139,3 +139,10 @@ class Reader:
         cur.execute(q, (term, term, term))
         row_list = cur.fetchall()
         return dblock_from_row_list(row_list)
+
+    def get_geo_list(self) -> list:
+        q = 'SELECT * FROM geo_unit ORDER BY geo_id'
+        cur = self.conn.cursor()
+        cur.execute(q)
+        return cur.fetchall()
+

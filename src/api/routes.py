@@ -16,7 +16,6 @@ dbreader = dbread.Reader
 dbwriter = dbwrite.Writer
 
 
-
 def db_read(func: callable, *args, **kwargs):
     conn = dbread.Reader(db_str)
     try:
@@ -123,3 +122,8 @@ async def get_datablocks_by_search_string(string: str, filter: str | None = None
     else:
         res = db_read(dbreader.get_datablocks_by_search, string)
     return res
+
+
+@router.get('/geo')
+async def get_geo_list():
+    return db_read(dbreader.get_geo_list)
