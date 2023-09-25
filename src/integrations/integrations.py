@@ -1,7 +1,10 @@
 import src.models.models as models
 import requests
+from enum import Enum
 
 import dateutil.parser as parser
+
+AggMethod = Enum('AggMethod', ['AVG', 'AVG_WEIGHTED'])
 
 
 class GeoCache:
