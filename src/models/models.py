@@ -9,7 +9,7 @@ def stringify_ts_columns():
     return ', '.join(ts_cols)
 
 
-class SourceDataBlock(BaseModel):
+class DataBlockBase(BaseModel):
     title: str = Field(..., min_length=1)
     type: str = Field(..., min_length=1)
     source: str = Field(..., min_length=1)
@@ -21,9 +21,12 @@ class SourceDataBlock(BaseModel):
     description: str = Field(..., min_length=1)
 
 
-class NormalisedDataBlock(SourceDataBlock):
+class DataBlock(DataBlockBase):
     data_id: int = Field(ge=1)
     meta: dict = Field()
+
+    class Config:
+        orm_mode = True
 
 
 class Timeseries:

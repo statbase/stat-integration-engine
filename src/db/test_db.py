@@ -1,7 +1,7 @@
-import src.models.models as models
-import src.db.write as dbwrite
-import src.db.read as dbread
-import src.db.scripts.run_migration as mig
+import models.models as models
+import db.write as dbwrite
+import db.read as dbread
+import db.scripts.run_migration as mig
 import os
 import sqlite3
 import unittest
@@ -29,7 +29,7 @@ class TestHelper(unittest.TestCase):
             "geo_groups": "C",
             "meta": '{"a": "b"}'}]
         got = dbread.dblock_from_row_list(row_list)
-        want = [models.NormalisedDataBlock(**{
+        want = [models.DataBlock(**{
             "data_id": 1,
             "type": "timeseries",
             "source": "Kolada",
@@ -61,7 +61,7 @@ class TestDbRead(unittest.TestCase):
 
     def test_get_all_tags(self):
         conn = dbwrite.Writer(test_db)
-        blocks = [models.SourceDataBlock(**{
+        blocks = [models.DataBlockBase(**{
             "type": "timeseries",
             "source": "Kolada",
             "source_id": "A343434",
@@ -80,7 +80,7 @@ class TestDbRead(unittest.TestCase):
 
     def test_datablocks_by_search(self):
         writer = dbwrite.Writer(test_db)
-        blocks = [models.SourceDataBlock(**{
+        blocks = [models.DataBlockBase(**{
             "type": "timeseries",
             "source": "Kolada",
             "source_id": "A343434",
@@ -94,7 +94,7 @@ class TestDbRead(unittest.TestCase):
 
         reader = dbread.Reader(test_db)
         got = reader.get_datablocks_by_search(term="a")
-        want = [models.NormalisedDataBlock(**{
+        want = [models.DataBlock(**{
             "type": "timeseries",
             "source": "Kolada",
             "source_id": "A343434",
@@ -110,7 +110,7 @@ class TestDbRead(unittest.TestCase):
 
     def test_datablocks_by_search_filters(self):
         writer = dbwrite.Writer(test_db)
-        blocks = [models.SourceDataBlock(**{
+        blocks = [models.DataBlockBase(**{
             "type": "timeseries",
             "source": "Kolada",
             "source_id": "A343434",
@@ -124,7 +124,7 @@ class TestDbRead(unittest.TestCase):
 
         reader = dbread.Reader(test_db)
         got = reader.get_datablocks_by_search(term="a", geo_groups='C', source='Kolada')
-        want = [models.NormalisedDataBlock(**{
+        want = [models.DataBlock(**{
             "type": "timeseries",
             "source": "Kolada",
             "source_id": "A343434",

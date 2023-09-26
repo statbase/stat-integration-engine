@@ -1,4 +1,4 @@
-import src.models.models as models
+import models.models as models
 import requests
 from enum import Enum
 
@@ -36,10 +36,10 @@ class BaseIntegration:
     base_url: str
     integration_id: int
 
-    def get_datablocks(self) -> list[models.SourceDataBlock]:
+    def get_datablocks(self) -> list[models.DataBlockBase]:
         """get datablocks from source"""
         pass
 
-    def get_timeseries(self, dblock: models.NormalisedDataBlock, geo_list: [str]) -> models.Timeseries:
+    def get_timeseries(self, dblock: models.DataBlock, geo_list: [str]) -> models.Timeseries:
         """get timeseries data from source for datablock"""
         pass

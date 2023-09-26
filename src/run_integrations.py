@@ -27,7 +27,7 @@ def calculate_national_mean(method: i.AggMethod, integration: i.BaseIntegration,
     pass
 
 
-#TODO: Don't hardcode geo_ids
+# TODO: Don't hardcode geo_ids
 def set_meta_for_block(block):
     if block.geo_groups == 'R':
         geo_id = '0001'  # Stockholm region
@@ -45,6 +45,7 @@ def set_meta_for_block(block):
 
 
 if __name__ == "__main__":
+    db_writer.clear_timeseries_for_integration(kolada.integration_id)
     # Get data from integration
     datablock_list = kolada.get_datablocks()
 
@@ -56,13 +57,14 @@ if __name__ == "__main__":
     db_writer.upsert_datablocks(datablock_list)
 
     # Calculate and set meta
-    db_writer.clear_timeseries_for_integration(kolada.integration_id)
+    """
     datablock_list = db_reader.get_datablocks_by_filters(source='Kolada')
+    
     pool = mp.Pool(processes=mp.cpu_count())
     pool.map(set_meta_for_block, datablock_list)
     pool.close()
     pool.join()
-
+    """
     # Cleanup
     db_writer.close()
     db_reader.close()

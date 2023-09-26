@@ -1,12 +1,12 @@
 from fastapi import APIRouter, HTTPException
-import src.models.models as models
-import src.db.read as dbread
-import src.db.write as dbwrite
+import models.models as models
+import db.read as dbread
+import db.write as dbwrite
 import json
 import pandas as pd
-import src.integrations.kolada as k
-import src.integrations.integrations as i
-import src.config.config as config
+import integrations.kolada as k
+import integrations.integrations as i
+import config.config as config
 
 router = APIRouter()
 kolada = k.KoladaIntegration()
@@ -54,7 +54,7 @@ def parse_datablock_filter(filter: str) -> dict:
     kwarg_list = filter.split(',')
     for kwarg in kwarg_list:
         key, val = kwarg.split('=', 1)
-        if key not in models.SourceDataBlock.__annotations__:  # Okay, this is pretty hacky...
+        if key not in models.DataBlockBase.__annotations__:  # Okay, this is pretty hacky...
             raise ValueError(f"invalid filter key: '{key}'")
         if len(val) == 0:
             raise ValueError("length of filter value is 0")

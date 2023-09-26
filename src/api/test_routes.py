@@ -1,5 +1,5 @@
 import unittest
-import src.api.routes as routes
+import api.routes as routes
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from unittest.mock import patch

@@ -1,12 +1,12 @@
 import sqlite3
-import src.models.models as models
+import models.models as models
 import pandas as pd
 import json
 
 
-def dblock_from_row_list(row_list: list) -> list[models.NormalisedDataBlock]:
+def dblock_from_row_list(row_list: list) -> list[models.DataBlock]:
     return [
-        models.NormalisedDataBlock(**{
+        models.DataBlock(**{
             "data_id": row["data_id"],
             "type": row["type"],
             "source": row["source"],
@@ -121,7 +121,7 @@ class Reader:
         return meta
 
     # Primitive as hell but works surprisingly well
-    def get_datablocks_by_search(self, term: str, **filters) -> list[models.NormalisedDataBlock]:
+    def get_datablocks_by_search(self, term: str, **filters) -> list[models.DataBlock]:
         term = '%' + term + '%'
         q = "SELECT * FROM data_block WHERE (title LIKE (?) OR tags LIKE (?))"
         if filters:

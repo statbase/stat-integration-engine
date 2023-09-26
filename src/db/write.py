@@ -1,6 +1,6 @@
 import sqlite3
 import json
-import src.models.models as models
+from models import models
 
 
 class Writer:
@@ -14,7 +14,7 @@ class Writer:
     def close(self):
         self.conn.close()
 
-    def upsert_datablocks(self, datablocks: list[models.SourceDataBlock]):
+    def upsert_datablocks(self, datablocks: list[models.DataBlockBase]):
         cur = self.conn.cursor()
         for block in datablocks:
             cur.execute("""

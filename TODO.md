@@ -5,6 +5,7 @@ FEATURES
 
 
 FIXES
+- Use dictionary in routes.py instead of **args in func - dict is more pythonic
 - Add proper logger + use it for errors and warnings
 - Write missing tests
 - Fix relative paths so files can be run from wherever
@@ -17,3 +18,10 @@ FIXES
     - [2012-01-01, 2013-01-01, 2014-01-01]
     - [2012-01-01. 2012-02-01, ...]
 - Consider using SQLAlchemy (ORM)
+
+DOCS
+- Setup instructions
+      - Setup PythonPath (common problem)
+      - Fix virtualenv 
+      - Migrate database
+      - Run 

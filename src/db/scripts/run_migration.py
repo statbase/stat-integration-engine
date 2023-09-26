@@ -1,4 +1,5 @@
 import sqlite3
+import config.config as config
 
 
 def run_schema_migration(conn: sqlite3.Connection):
@@ -11,3 +12,7 @@ def run_schema_migration(conn: sqlite3.Connection):
     with open('db/scripts/geo_units.py', 'r') as script_file:
         code = script_file.read()
         exec(code)
+
+
+conn = sqlite3.connect(config.get("db_string"))
+run_schema_migration(conn)

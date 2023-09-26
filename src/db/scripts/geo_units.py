@@ -1,6 +1,6 @@
 import sqlite3
 import re
-import src.config.config as config
+import config.config as config
 
 communes = {}
 regions = {}
