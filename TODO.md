@@ -5,6 +5,7 @@ FEATURES
 
 
 FIXES
+- Fix tags
 - Use dictionary in routes.py instead of **args in func - dict is more pythonic
 - Add proper logger + use it for errors and warnings
 - Write missing tests

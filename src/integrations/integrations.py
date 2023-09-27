@@ -1,10 +1,10 @@
+import pandas
 import models.models as models
 import requests
-from enum import Enum
-
+import os
 import dateutil.parser as parser
 
-AggMethod = Enum('AggMethod', ['AVG', 'AVG_WEIGHTED'])
+cur_dir = os.path.dirname(os.path.realpath(__file__))
 
 
 class GeoCache:
@@ -13,7 +13,7 @@ class GeoCache:
 
     def get_id_list(self):
         if self.ids is None:
-            with open('integrations/files/geo_data.csv', 'r') as file:
+            with open(os.path.join(cur_dir, 'files', 'geo_data.csv'), 'r') as file:
                 self.ids = [line.strip().split(';')[0] for line in file]
         return self.ids
 
@@ -40,6 +40,6 @@ class BaseIntegration:
         """get datablocks from source"""
         pass
 
-    def get_timeseries(self, dblock: models.DataBlock, geo_list: [str]) -> models.Timeseries:
+    def get_timeseries(self, dblock: models.DataBlock, geo_list: [str]) -> pandas.DataFrame:
         """get timeseries data from source for datablock"""
         pass

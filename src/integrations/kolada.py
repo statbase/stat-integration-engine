@@ -1,3 +1,5 @@
+import pandas
+
 import integrations.integrations as i
 import models.models as models
 import pandas as pd
@@ -51,7 +53,7 @@ class KoladaIntegration(i.BaseIntegration):
     Damnit, if you don't like it; come up with a fixing PR or shut up!
     """
 
-    def get_timeseries(self, dblock: models.DataBlock, geo_list: list[str]) -> models.Timeseries:
+    def get_timeseries(self, dblock: models.DataBlock, geo_list: list[str]) -> pandas.DataFrame:
         cols = {col: [] for col in models.ts_cols}
         for geo_id in geo_list:
             url = '%s/data/kpi/%s/municipality/%s' % (self.base_url, dblock.source_id, geo_id)
@@ -76,9 +78,7 @@ class KoladaIntegration(i.BaseIntegration):
                     if len(geo_id) == 3:
                         geo_id = '0' + str(geo_id)
                     cols['geo_id'].append(geo_id)
-        df = pd.DataFrame(cols)
-        return models.Timeseries(df)
-
+        return pd.DataFrame(cols)
     def datablocks_from_kolada_endpoint(self, url) -> list:
         data = i.request_json(url)
         if data['count'] == 0:

@@ -1,8 +1,8 @@
 # coding: utf-8
 from sqlalchemy import Column, ForeignKey, Index, Integer, Numeric, Table, Text, UniqueConstraint, text
-from sqlalchemy.sql.sqltypes import NullType
+from sqlalchemy.sql.sqltypes import NullType, JSON
 from sqlalchemy.orm import relationship
-from .db import declarative_base as base
+from .database import declarative_base as base
 
 Base = base()
 metadata = Base.metadata
@@ -13,9 +13,9 @@ class DataBlock(Base):
 
     data_id = Column(Integer, primary_key=True)
     type = Column(Text, nullable=False)
-    meta = Column(Text, nullable=False, server_default=text("'{}'"))
+    meta = Column(JSON, nullable=False, server_default=text("'{}'"))
     source = Column(Text, nullable=False)
-    source_id = Column(Text)
+    source_id = Column(Text, unique=True)
     tags = Column(Text)
     geo_groups = Column(Text)
     title = Column(Text)
@@ -30,13 +30,6 @@ class GeoUnit(Base):
     type = Column(Text, nullable=False)
     geo_id = Column(Text, primary_key=True)
     name = Column(Text)
-
-
-t_sqlite_sequence = Table(
-    'sqlite_sequence', metadata,
-    Column('name', NullType),
-    Column('seq', NullType)
-)
 
 
 class Timeseries(Base):

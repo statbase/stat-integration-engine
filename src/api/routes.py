@@ -1,55 +1,31 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 import models.models as models
-import db.read as dbread
-import db.write as dbwrite
 import json
 import pandas as pd
 import integrations.kolada as k
 import integrations.integrations as i
 import config.config as config
+from database import database, crud
+from sqlalchemy.orm import Session
 
 router = APIRouter()
 kolada = k.KoladaIntegration()
 geo_cache = i.GeoCache()
 db_str = config.get("db_string")
-dbreader = dbread.Reader
-dbwriter = dbwrite.Writer
 
 
-def db_read(func: callable, *args, **kwargs):
-    conn = dbread.Reader(db_str)
+def get_db():
+    db = database.session_factory()
     try:
-        if args and kwargs:
-            res = func(conn, *args, **kwargs)
-        elif args:
-            res = func(conn, *args)
-        elif kwargs:
-            res = func(conn, **kwargs)
-        else:
-            res = func(conn)
+        yield db
     finally:
-        conn.close()
-    return res
-
-
-def db_write(func: callable, *args, **kwargs):
-    conn = dbwrite.Writer(db_str)
-    try:
-        if args and kwargs:
-            res = func(conn, *args, **kwargs)
-        elif args:
-            res = func(conn, *args)
-        elif kwargs:
-            res = func(conn, **kwargs)
-        else:
-            res = func(conn)
-    finally:
-        conn.close()
-    return res
+        db.close()
 
 
 # Some would say this is hacky. I call it pragmatic!
 def parse_datablock_filter(filter: str) -> dict:
+    if filter is None:
+        return {}
     out = {}
     kwarg_list = filter.split(',')
     for kwarg in kwarg_list:
@@ -60,6 +36,12 @@ def parse_datablock_filter(filter: str) -> dict:
             raise ValueError("length of filter value is 0")
         out[key] = val
     return out
+
+
+def parse_tags(tag_string: str) -> list[str]:
+    if tag_string is None:
+        return []
+    return tag_string.split(',')
 
 
 def parse_geo_ids(id_list: str) -> list[str]:
@@ -74,56 +56,49 @@ def parse_geo_ids(id_list: str) -> list[str]:
 
 """ROUTES"""
 
-
 @router.get("/tags")
-async def get_datablocks_for_tags():
-    res = db_read(dbread.Reader.get_all_tags)
+async def get_all_tags(db: Session = Depends(get_db)):
+    res = crud.get_all_tags(db)
     return res
 
 
 # If we don't have the timeseries, fetch it via integration and upload to db. 
 # Yes, this can be improved...
 @router.get("/timeseries/{data_id}")
-async def get_timeseries_by_id(data_id: int, geo_ids: str):
+async def get_timeseries_by_id(data_id: int, geo_ids: str, db: Session = Depends(get_db)):
     try:
         id_list = parse_geo_ids(geo_ids)
     except ValueError as e:
         return HTTPException(422, e)
-
-    ts, missing_ids = db_read(dbreader.get_timeseries, data_id, id_list)
+    ts, missing_ids = crud.get_timeseries(db, data_id, id_list)
     if missing_ids:
-        dblock_list = db_read(dbreader.get_datablocks_by_filters, data_id=data_id)
-        fetched_ts = kolada.get_timeseries(dblock_list[0], missing_ids)  # List should only contain 1 entry
-        db_write(dbwriter.insert_timeseries, fetched_ts)
-        ts.df = pd.concat([ts.df, fetched_ts.df])
-    return json.loads(ts.df.to_json(orient="records"))
+        dblock_list = crud.get_datablocks(db, data_id=data_id)
+        ts_fetched = kolada.get_timeseries(dblock_list[0], missing_ids)  # List should only contain 1 entry
+        crud.insert_timeseries(db, ts_fetched)
+        ts = pd.concat([ts, ts_fetched])
+    return json.loads(ts.to_json(orient="records"))
 
 
 @router.get("/datablocks/tag/{tag}")
-async def get_datablocks_by_tag(tag: str):
-    res = db_read(dbreader.get_datablocks_by_filters, tags=tag)
-    return res
+async def get_datablocks_by_tag(tag: str, db: Session = Depends(get_db)):
+    return crud.get_datablocks(db, tags=[tag])
 
 
 @router.get("/datablocks/{id}")
-async def get_datablocks_by_id(id: int):
-    res = db_read(dbreader.get_datablocks_by_filters, data_id=id)
-    return res
+async def get_datablocks_by_id(id: int, db: Session = Depends(get_db)):
+    return crud.get_datablocks(db, data_id=id)[0]
 
 
-@router.get("/datablocks/search/{string}")
-async def get_datablocks_by_search_string(string: str, filter: str | None = None):
-    if filter:
-        try:
-            kwargs = parse_datablock_filter(filter)
-        except ValueError as e:
-            return HTTPException(422, detail=str(e))
-        res = db_read(dbreader.get_datablocks_by_search, string, **kwargs)
-    else:
-        res = db_read(dbreader.get_datablocks_by_search, string)
-    return res
+@router.get("/datablocks/search/{term}")
+async def get_datablocks_by_search(term: str = '', filter: str = None, tags: str = None, db: Session = Depends(get_db)):
+    tag_list = parse_tags(tags)
+    try:
+        filter_args = parse_datablock_filter(filter)
+    except ValueError as e:
+        return HTTPException(422, detail=str(e))
+    return crud.get_datablocks(db, term, tag_list, **filter_args)
 
 
 @router.get('/geo')
-async def get_geo_list():
-    return db_read(dbreader.get_geo_list)
+async def get_geo_list(db: Session = Depends(get_db)):
+    return crud.get_geo_list(db)
