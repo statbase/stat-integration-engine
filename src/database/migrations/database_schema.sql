@@ -1,8 +1,3 @@
---
--- File generated with SQLiteStudio v3.4.4 on Wed Sep 20 14:07:39 2023
---
--- Text encoding used: UTF-8
---
 PRAGMA foreign_keys = off;
 BEGIN TRANSACTION;
 
