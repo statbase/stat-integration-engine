@@ -14,7 +14,7 @@ def setup_test_db() -> scoped_session:
     # Create tables
     schemas.metadata.create_all(bind=engine)
     # Upload geo
-    df = scripts.geo_df()
+    df = scripts.get_geo_df()
     df.to_sql('geo_unit', engine, if_exists='replace', index=False)
     return session
 
@@ -39,7 +39,7 @@ class TestDbRead(unittest.TestCase):
             "geo_groups": "C",
             "var_labels": "Kön"})]
         crud.upsert_datablocks(self.session(), block_list)
-        got = crud.get_all_tags(self.session())
+        got = crud.get_tags(self.session())
         want = {"A": 1, "B": 1}
         self.assertEqual(got, want)
 

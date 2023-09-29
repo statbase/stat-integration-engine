@@ -1,6 +1,6 @@
 # coding: utf-8
-from sqlalchemy import Column, ForeignKey, Index, Integer, Numeric, Table, Text, UniqueConstraint, text
-from sqlalchemy.sql.sqltypes import NullType, JSON
+from sqlalchemy import Column, ForeignKey, Index, Integer, Numeric, Text, UniqueConstraint, text
+from sqlalchemy.sql.sqltypes import JSON
 from sqlalchemy.orm import relationship
 from .database import declarative_base as base
 

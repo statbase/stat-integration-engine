@@ -28,9 +28,7 @@ class TestHelpers(unittest.TestCase):
 
 
 class TestRoutes(unittest.TestCase):
-    @patch('api.routes.db_read')
-    def test_get_tags(self, mock_db_read):
-        mock_db_read.return_value = {"Kvalitet och resultat": 2383}
+    def test_get_tags(self):
         client = TestClient(app)
 
         res = client.get("/tags")
