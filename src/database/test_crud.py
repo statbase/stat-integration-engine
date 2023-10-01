@@ -14,7 +14,7 @@ def setup_test_db() -> scoped_session:
     # Create tables
     schemas.metadata.create_all(bind=engine)
     # Upload geo
-    df = scripts.geo_df()
+    df = scripts.get_geo_df()
     df.to_sql('geo_unit', engine, if_exists='replace', index=False)
     return session
 
