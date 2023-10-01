@@ -1,18 +1,22 @@
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import and_, or_, case, delete
 from sqlalchemy.dialects.sqlite import insert
-from . import schemas, database
+from . import schemas
 from models import models
 import pandas as pd
-
 
 """ READ """
 
 
-def get_all_tags(db: Session) -> dict:
+def get_tags(db: Session, tag_list: list[int] = None) -> dict:
+    tags_col = schemas.DataBlock.tags
     tag_counts = {}
-    all_tag_lists = db.query(schemas.DataBlock.tags).all()
-    for tag_list in all_tag_lists:
+    q = db.query(schemas.DataBlock.tags)
+    if tag_list:
+        filter_conditions = [tags_col.like(f'%{tag}%') for tag in tag_list]
+        q = q.filter(and_(*filter_conditions))
+    tag_list_list = q.all()
+    for tag_list in tag_list_list:
         for tag in tag_list[0].split(';'):
             if tag in tag_counts.keys():
                 tag_counts[tag] += 1
@@ -22,10 +26,10 @@ def get_all_tags(db: Session) -> dict:
 
 
 # noinspection PyTypeChecker
-def get_datablocks(db: Session, search_term: str = '', tags: list[str] = None, **filters):
-    datablock_col = schemas.DataBlock
-    q = db.query(datablock_col).filter(or_(datablock_col.title.like(f'%{search_term}%'),
-                                           datablock_col.tags.like(f'%{search_term}%')))
+def get_datablocks(db: Session, search_term: str = '', tags: list[str] = None, **filters) -> list[models.DataBlock]:
+    schema_datablock = schemas.DataBlock
+    q = db.query(schema_datablock).filter(or_(schema_datablock.title.like(f'%{search_term}%'),
+                                              schema_datablock.tags.like(f'%{search_term}%')))
     if filters:
         q = q.filter_by(**filters)
 
@@ -37,7 +41,7 @@ def get_datablocks(db: Session, search_term: str = '', tags: list[str] = None, *
 
     q = q.order_by(
         case(
-            (datablock_col.title.like(search_term), 1),
+            (schema_datablock.title.like(search_term), 1),
             else_=2
         )
     )
@@ -132,7 +136,6 @@ def insert_timeseries(db: Session, df: pd.DataFrame):
     df.to_sql(con=db.bind, name='timeseries', if_exists='append', index=False)
 
 
-# noinspection PyTypeChecker
 def update_datablock_meta(db: Session, data_id: int, meta: dict):
     (db.query(schemas.DataBlock).
      filter(schemas.DataBlock.data_id == data_id).
@@ -140,7 +143,6 @@ def update_datablock_meta(db: Session, data_id: int, meta: dict):
     db.commit()
 
 
-# noinspection PyTypeChecker
 def clear_timeseries_for_integration(db: Session, integration_id: int):
     ts = schemas.Timeseries
     dblock = schemas.DataBlock

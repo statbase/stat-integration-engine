@@ -1,13 +1,20 @@
 import pandas as pd
 import os
+import sqlite3
+from config import config
 
 cur_dir = os.path.dirname(os.path.realpath(__file__))
 
 
-def geo_df() -> pd.DataFrame:
+def get_geo_df() -> pd.DataFrame:
     return pd.read_csv(os.path.join(cur_dir, '../files', 'geo_data.csv'))
 
 
-def schema_sql() -> str:
-    with open(os.path.join(cur_dir, '../migrations', 'database_schema.sql')) as sql_file:
-        return sql_file.read()
+def create_db_schemas():
+    conn = sqlite3.connect(config.get('db_string'))
+    with open(os.path.join(cur_dir, '../migrations', 'database_schema.sql'), 'r') as sql_file:
+        sql = sql_file.read()
+        cursor = conn.cursor()
+        cursor.executescript(sql)
+        conn.commit()
+    pass
