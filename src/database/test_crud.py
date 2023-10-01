@@ -28,78 +28,105 @@ class TestDbRead(unittest.TestCase):
         self.session.remove()
 
     def test_get_all_tags(self):
-        block_list = [models.DataBlockBase(**{
-            "type": "timeseries",
-            "source": "Kolada",
-            "source_id": "A343434",
-            "tags": "A;B",
-            "title": "a",
-            "description": "test_description",
-            "integration_id": 1,
-            "geo_groups": "C",
-            "var_labels": "Kön"})]
+        block_list = [
+            models.DataBlockBase(
+                **{
+                    "type": "timeseries",
+                    "source": "Kolada",
+                    "source_id": "A343434",
+                    "tags": "A;B",
+                    "title": "a",
+                    "description": "test_description",
+                    "integration_id": 1,
+                    "geo_groups": "C",
+                    "var_labels": "Kön",
+                }
+            )
+        ]
         crud.upsert_datablocks(self.session(), block_list)
-        got = crud.get_all_tags(self.session())
+        got = crud.get_tags(self.session())
         want = {"A": 1, "B": 1}
         self.assertEqual(got, want)
 
     def test_datablocks_by_search(self):
-        block_list = [models.DataBlockBase(**{
-            "type": "timeseries",
-            "source": "Kolada",
-            "source_id": "A343434",
-            "tags": "A;B",
-            "title": "a",
-            "description": "test_description",
-            "integration_id": 1,
-            "geo_groups": "C",
-            "var_labels": "Kön"})]
+        block_list = [
+            models.DataBlockBase(
+                **{
+                    "type": "timeseries",
+                    "source": "Kolada",
+                    "source_id": "A343434",
+                    "tags": "A;B",
+                    "title": "a",
+                    "description": "test_description",
+                    "integration_id": 1,
+                    "geo_groups": "C",
+                    "var_labels": "Kön",
+                }
+            )
+        ]
         crud.upsert_datablocks(self.session(), block_list)
-
+        # Testar
         got = crud.get_datablocks(db=self.session(), search_term="a")
-        want = [models.DataBlock(**{
-            "type": "timeseries",
-            "source": "Kolada",
-            "source_id": "A343434",
-            "tags": "A;B",
-            "title": "a",
-            "description": "test_description",
-            "integration_id": 1,
-            "geo_groups": "C",
-            "data_id": 1,
-            "var_labels": "Kön",
-            "meta": {}})]
+        want = [
+            models.DataBlock(
+                **{
+                    "type": "timeseries",
+                    "source": "Kolada",
+                    "source_id": "A343434",
+                    "tags": "A;B",
+                    "title": "a",
+                    "description": "test_description",
+                    "integration_id": 1,
+                    "geo_groups": "C",
+                    "data_id": 1,
+                    "var_labels": "Kön",
+                    "meta": {},
+                }
+            )
+        ]
         self.assertEqual(got, want)
 
     def test_datablocks_by_search_filters(self):
-        block_list = [models.DataBlockBase(**{
-            "type": "timeseries",
-            "source": "Kolada",
-            "source_id": "A343434",
-            "tags": "A;B",
-            "title": "a",
-            "description": "test_description",
-            "integration_id": 1,
-            "geo_groups": "C",
-            "var_labels": "Kön"})]
+        block_list = [
+            models.DataBlockBase(
+                **{
+                    "type": "timeseries",
+                    "source": "Kolada",
+                    "source_id": "A343434",
+                    "tags": "A;B",
+                    "title": "a",
+                    "description": "test_description",
+                    "integration_id": 1,
+                    "geo_groups": "C",
+                    "var_labels": "Kön",
+                }
+            )
+        ]
 
         crud.upsert_datablocks(self.session(), block_list)
 
-        got = crud.get_datablocks(db=self.session(), search_term="a", source="Kolada", type="timeseries")
-        want = [models.DataBlock(**{
-            "type": "timeseries",
-            "source": "Kolada",
-            "source_id": "A343434",
-            "tags": "A;B",
-            "title": "a",
-            "description": "test_description",
-            "integration_id": 1,
-            "geo_groups": "C",
-            "data_id": 1,
-            "var_labels": "Kön",
-            "meta": {}})]
+        got = crud.get_datablocks(
+            db=self.session(), search_term="a", source="Kolada", type="timeseries"
+        )
+        want = [
+            models.DataBlock(
+                **{
+                    "type": "timeseries",
+                    "source": "Kolada",
+                    "source_id": "A343434",
+                    "tags": "A;B",
+                    "title": "a",
+                    "description": "test_description",
+                    "integration_id": 1,
+                    "geo_groups": "C",
+                    "data_id": 1,
+                    "var_labels": "Kön",
+                    "meta": {},
+                }
+            )
+        ]
         self.assertEqual(got, want)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

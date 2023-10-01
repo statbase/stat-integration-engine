@@ -1,8 +1,8 @@
-import pandas as pd
 from pydantic import BaseModel, Field
 
 ts_cols = ["data_id", "value", "variable", "geo_id", "date"]
 meta_keys = ['span', 'resolution', 'var_values']
+
 
 class DataBlockBase(BaseModel):
     title: str = Field(..., min_length=1)
@@ -22,5 +22,3 @@ class DataBlock(DataBlockBase):
 
     class Config:
         from_attributes = True
-
-

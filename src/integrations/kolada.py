@@ -34,7 +34,7 @@ class KoladaIntegration(i.BaseIntegration):
         self.integration_id = 1
 
     def get_datablocks(self) -> list[models.DataBlockBase]:
-        url = self.base_url + "/kpi"
+        url = self.base_url + '/kpi'
         datablocks = self.datablocks_from_kolada_endpoint(url)
         # Fetch rest of pages if any
         page = 2
@@ -79,6 +79,7 @@ class KoladaIntegration(i.BaseIntegration):
                         geo_id = '0' + str(geo_id)
                     cols['geo_id'].append(geo_id)
         return pd.DataFrame(cols)
+
     def datablocks_from_kolada_endpoint(self, url) -> list:
         data = i.request_json(url)
         if data['count'] == 0:

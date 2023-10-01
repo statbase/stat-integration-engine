@@ -1,6 +1,5 @@
 import config.config as config
 import integrations.kolada as k
-import integrations.integrations as i
 from database import database, crud, schemas
 import multiprocessing as mp
 
@@ -15,9 +14,7 @@ OPTIONALS
 1. Calculate avg 
 """
 
-db_str = config.get('db_string')
 kolada = k.KoladaIntegration()
-
 db_session = database.Session()
 
 
@@ -54,7 +51,6 @@ if __name__ == "__main__":
 
     # Calculate and set meta
     datablock_list = crud.get_datablocks(db_session, source='Kolada')
-    print(len(datablock_list))
 
     pool = mp.Pool(processes=mp.cpu_count())
     pool.map(set_meta_for_block, datablock_list)
