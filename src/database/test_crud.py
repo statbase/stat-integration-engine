@@ -4,6 +4,11 @@ from database import crud, schemas
 from models import models
 from database.scripts import scripts
 import unittest
+import pandas as pd
+from pandas.testing import assert_frame_equal
+import logging
+import sys
+
 
 
 def setup_test_db() -> scoped_session:
@@ -14,7 +19,7 @@ def setup_test_db() -> scoped_session:
     # Create tables
     schemas.metadata.create_all(bind=engine)
     # Upload geo
-    df = scripts.geo_df()
+    df = scripts.get_geo_df()
     df.to_sql('geo_unit', engine, if_exists='replace', index=False)
     return session
 
@@ -22,6 +27,7 @@ def setup_test_db() -> scoped_session:
 class TestDbRead(unittest.TestCase):
     def setUp(self):
         self.session = setup_test_db()
+        logging.basicConfig(filename='test_log.log', level=logging.DEBUG)
 
     def tearDown(self):
         # Remove all data from the test database and close the session
@@ -65,7 +71,7 @@ class TestDbRead(unittest.TestCase):
             )
         ]
         crud.upsert_datablocks(self.session(), block_list)
-        # Testar
+        
         got = crud.get_datablocks(db=self.session(), search_term="a")
         want = [
             models.DataBlock(
@@ -126,6 +132,32 @@ class TestDbRead(unittest.TestCase):
             )
         ]
         self.assertEqual(got, want)
+
+    def test_get_timeseries(self):
+        crud.insert_timeseries(self.session(), pd.DataFrame({
+            "data_id": [1],
+            "value": [123.456],
+            "date": ["2023-01-01"],
+            "variable": ["TestVar"],
+            "geo_id": ["TestGeo"]
+        }))
+        
+        df, missing_geo_ids = crud.get_timeseries(db=self.session(), data_id=1, geo_list=["TestGeo"])
+        #logging.info(f"df: {df}")
+
+        expected_df = pd.DataFrame({
+            "ts_id": [1],
+            "data_id": [1],
+            "value": [123.456],
+            "date": ["2023-01-01"],
+            "variable": ["TestVar"],
+            "geo_id": ["TestGeo"]
+        })
+
+        #logging.info(f"expected_df: {expected_df}")
+
+        assert_frame_equal(df, expected_df)
+        self.assertEqual(len(missing_geo_ids), 0)
 
 
 if __name__ == "__main__":
