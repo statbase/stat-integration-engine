@@ -6,10 +6,6 @@ from database.scripts import scripts
 import unittest
 import pandas as pd
 from pandas.testing import assert_frame_equal
-import logging
-import sys
-
-
 
 def setup_test_db() -> scoped_session:
     # Create session
@@ -27,7 +23,6 @@ def setup_test_db() -> scoped_session:
 class TestDbRead(unittest.TestCase):
     def setUp(self):
         self.session = setup_test_db()
-        logging.basicConfig(filename='test_log.log', level=logging.DEBUG)
 
     def tearDown(self):
         # Remove all data from the test database and close the session
@@ -143,7 +138,6 @@ class TestDbRead(unittest.TestCase):
         }))
         
         df, missing_geo_ids = crud.get_timeseries(db=self.session(), data_id=1, geo_list=["TestGeo"])
-        #logging.info(f"df: {df}")
 
         expected_df = pd.DataFrame({
             "ts_id": [1],
@@ -154,11 +148,8 @@ class TestDbRead(unittest.TestCase):
             "geo_id": ["TestGeo"]
         })
 
-        #logging.info(f"expected_df: {expected_df}")
-
         assert_frame_equal(df, expected_df)
         self.assertEqual(len(missing_geo_ids), 0)
-
 
 if __name__ == "__main__":
     unittest.main()
