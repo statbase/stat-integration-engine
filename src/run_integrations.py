@@ -1,5 +1,6 @@
-import config.config as config
-import integrations.kolada as k
+import sys
+import functools
+from integrations import integrations as i, kolada as k
 from database import database, crud, schemas
 import multiprocessing as mp
 
@@ -13,20 +14,18 @@ DEFAULT BATCH RUN
 OPTIONALS 
 1. Calculate avg 
 """
-
-kolada = k.KoladaIntegration()
 db_session = database.Session()
 
 
 # TODO: Don't hardcode geo_ids
 
-def set_meta_for_block(block: schemas.DataBlock):
+def set_meta_for_block(integration: i.BaseIntegration, block: schemas.DataBlock):
     if block.geo_groups == 'R':
         geo_id = '0001'  # Stockholm region
     else:
         geo_id = '0180'  # Stockholm municipality
 
-    ts = kolada.get_timeseries(block, [geo_id])
+    ts = integration.get_timeseries(block, [geo_id])
     crud.insert_timeseries(db_session, ts)
     try:
         meta = crud.calculate_meta(db_session, block.data_id)
@@ -37,22 +36,26 @@ def set_meta_for_block(block: schemas.DataBlock):
 
 
 if __name__ == "__main__":
-    crud.clear_timeseries_for_integration(db_session, kolada.integration_id)
+    integrations = [k.KoladaIntegration()]
 
-    # Get data from integration
-    datablock_list = kolada.get_datablocks()
+    for integration in integrations:
+        crud.clear_timeseries_for_integration(db_session, integration.integration_id)
 
-    # Verify blocks with my super advanced algorithm
-    if len(datablock_list) < 6000:
-        exit("Where's the KPI's, Kolada!? Why you gotta do me like this? Thought we were friends...")
+        # Get data from integration
+        datablock_list = integration.get_datablocks()
 
-    # Insert the datablocks and do the normalisation magic
-    crud.upsert_datablocks(db_session, datablock_list)
+        # Verify blocks with my super advanced algorithm
+        if len(datablock_list) < 6000:
+            exit("Where's the KPI's, Kolada!? Why you gotta do me like this? Thought we were friends...")
 
-    # Calculate and set meta
-    datablock_list = crud.get_datablocks(db_session, source='Kolada')
+        # Insert the datablocks and do the normalisation magic
+        crud.upsert_datablocks(db_session, datablock_list)
 
-    pool = mp.Pool(processes=mp.cpu_count())
-    pool.map(set_meta_for_block, datablock_list)
-    pool.close()
-    pool.join()
+        # Calculate and set meta
+        if "--meta" in sys.argv:
+            datablock_list = crud.get_datablocks(db_session)
+
+            pool = mp.Pool(processes=mp.cpu_count())
+            pool.map(functools.partial(set_meta_for_block, integration), datablock_list)
+            pool.close()
+            pool.join()

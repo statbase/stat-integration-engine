@@ -11,10 +11,9 @@ def get_geo_df() -> pd.DataFrame:
 
 
 def create_db_schemas():
-    conn = sqlite3.connect(config.get('db_string'))
+    conn = sqlite3.connect(config.get('DB_STRING'))
     with open(os.path.join(cur_dir, '../migrations', 'database_schema.sql'), 'r') as sql_file:
         sql = sql_file.read()
         cursor = conn.cursor()
         cursor.executescript(sql)
         conn.commit()
-    pass
