@@ -2,7 +2,9 @@
 
 A tool that fetches and normalises statistical data from public sources.
 
-[https://excalidraw.com/#json=7-lp_XmeB7ej3ttmi1ecu,R08EDmkB-lEaLrrd3oFrWQ
-](https://excalidraw.com/#json=N6f-DSqb-3yrOp0_5R2Lj,cVf4NW2QneswfNsOdt84Vw)
-![image](https://github.com/statbase/stat-integration-engine/assets/38020265/5e48339d-aeef-4a37-b1f3-1ff3b2c3e6b8)
+[![image](https://github.com/statbase/stat-integration-engine/assets/38020265/679d90a5-9193-4738-b2f2-056a089815c6)](https://excalidraw.com/#json=ZOUbDgS_wxDpZi7D3SpsE,4jQWhDwvkYDzGqceeLOecQ)https://excalidraw.com/#json=ZOUbDgS_wxDpZi7D3SpsE,4jQWhDwvkYDzGqceeLOecQ
+
+![Uploading image.png…]()
+
+
 
