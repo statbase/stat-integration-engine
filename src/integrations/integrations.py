@@ -1,8 +1,11 @@
-import pandas
-import models.models as models
-import requests
 import os
-import dateutil.parser as parser
+
+import pandas
+import requests
+from dateutil import parser
+
+from models import models
+
 
 cur_dir = os.path.dirname(os.path.realpath(__file__))
 
@@ -19,7 +22,7 @@ class GeoCache:
 
 
 def request_json(url):
-    res = requests.get(url)
+    res = requests.get(url, timeout=10)
     if res.status_code != 200:
         raise ValueError("bad status code: " + res.status_code)
     return res.json()

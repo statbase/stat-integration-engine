@@ -1,9 +1,8 @@
-import pandas
-
-import integrations.integrations as i
-import models.models as models
-import pandas as pd
 import re
+import pandas as pd
+
+from integrations import integrations as i
+from models import models
 
 
 def set_geo_group(label: str):
@@ -39,7 +38,7 @@ class KoladaIntegration(i.BaseIntegration):
         # Fetch rest of pages if any
         page = 2
         while page < 10:
-            paged_url = url + '?&page=%d' % page
+            paged_url = f'{url}?&page={page}'
             next_blocks = self.datablocks_from_kolada_endpoint(paged_url)
             if not next_blocks:
                 break
@@ -53,10 +52,10 @@ class KoladaIntegration(i.BaseIntegration):
     Damnit, if you don't like it; come up with a fixing PR or shut up!
     """
 
-    def get_timeseries(self, dblock: models.DataBlock, geo_list: list[str]) -> pandas.DataFrame:
+    def get_timeseries(self, dblock: models.DataBlock, geo_list: list[str]) -> pd.DataFrame:
         cols = {col: [] for col in models.ts_cols}
         for geo_id in geo_list:
-            url = '%s/data/kpi/%s/municipality/%s' % (self.base_url, dblock.source_id, geo_id)
+            url = f'{self.base_url}/data/kpi/{dblock.source_id}/municipality/{geo_id}'
             try:
                 data = i.request_json(url)
             except Exception as e:
@@ -73,7 +72,7 @@ class KoladaIntegration(i.BaseIntegration):
                     cols['variable'].append(set_variable(datapoint['gender']))
                     date = i.parse_date(year['period'])
                     cols['date'].append(date)
-                    # clean stupid municipality code (seriously Kolada, why do you make me do this!???)
+                    # clean stupid municipality code
                     geo_id = year['municipality']
                     if len(geo_id) == 3:
                         geo_id = '0' + str(geo_id)
@@ -90,11 +89,11 @@ class KoladaIntegration(i.BaseIntegration):
                 'title': value['title'],
                 'type': 'timeseries',
                 'source': 'Kolada',
-                'tags': split_tags(str(value['perspective'])) + ';' + split_tags(str(value['operating_area'])),
+                'tags': split_tags(str(value['perspective'])) + ';'
+                        + split_tags(str(value['operating_area'])),
                 'source_id': value['id'],
                 'integration_id': self.integration_id,
                 'var_labels': 'Kön',
                 'description': value['description'],
                 'geo_groups': set_geo_group(value['municipality_type'])})
             for value in values]
-

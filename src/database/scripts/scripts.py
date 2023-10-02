@@ -1,6 +1,6 @@
-import pandas as pd
 import os
 import sqlite3
+import pandas as pd
 from config import config
 
 cur_dir = os.path.dirname(os.path.realpath(__file__))

@@ -12,9 +12,3 @@ FIXES
     - [2012-01-01, 2013-01-01, 2014-01-01]
     - [2012-01-01. 2012-02-01, ...]
 
-DOCS
-- Setup instructions
-      - Fix virtualenv 
-      - Migrate database
-      - Problems:
-      - Import fail in IDE? Add project src to PythonPath

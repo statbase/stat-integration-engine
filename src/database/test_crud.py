@@ -1,12 +1,15 @@
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, scoped_session
-from database import crud, schemas
-from models import models
-from database.scripts import scripts
 import unittest
 import pandas as pd
 from pandas.testing import assert_frame_equal
-import json
+
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker, scoped_session
+
+from database import crud, schemas
+from database.scripts import scripts
+
+from models import models
+
 
 def setup_test_db() -> scoped_session:
     # Create session
@@ -55,7 +58,7 @@ class TestDbRead(unittest.TestCase):
 
     def tearDown(self):
         # Remove all data from the test database and close the session
-        self.session.commit()
+        self.session.remove()
 
     def test_get_no_tags(self):
         got = crud.get_tags(self.session())
@@ -64,13 +67,14 @@ class TestDbRead(unittest.TestCase):
     def test_get_all_tags(self):
         crud.upsert_datablocks(self.session(), self.block_list)
         got = crud.get_tags(self.session())
-        want = {"A": 2, "B": 1, "C": 3, "D": 1, "Pear": 2, "Apple": 1, "X": 1, "Y": 1, "Z": 1, "M": 1, "N": 1, "O": 1, "P": 1}
+        want = {"A": 2, "B": 1, "C": 3, "D": 1, "Pear": 2, "Apple": 1,
+                "X": 1, "Y": 1, "Z": 1, "M": 1, "N": 1, "O": 1, "P": 1}
         self.assertEqual(got, want)
 
     def test_datablocks_by_search(self):
         crud.upsert_datablocks(self.session(), self.block_list)
         got = crud.get_datablocks(db=self.session(), search_term="Pear")
-       
+
         want = [
             models.DataBlock(
                 type="timeseries", source="Kolada", source_id="A343434",
@@ -80,7 +84,7 @@ class TestDbRead(unittest.TestCase):
             models.DataBlock(
                 type="map", source="SEB", source_id="C343434",
                 tags="C;D;Pear;Apple", title="Göteborg", description="test_description",
-                integration_id=1, geo_groups="B", var_labels="Man",  data_id=3, meta={}
+                integration_id=1, geo_groups="B", var_labels="Man", data_id=3, meta={}
             ),
         ]
         self.assertEqual(got, want)
@@ -119,8 +123,9 @@ class TestDbRead(unittest.TestCase):
             "variable": ["TestVar"],
             "geo_id": ["TestGeo"]
         }))
-        
-        df, missing_geo_ids = crud.get_timeseries(db=self.session(), data_id=1, geo_list=["TestGeo"])
+        df, missing_geo_ids = crud.get_timeseries(db=self.session(),
+                                                  data_id=1,
+                                                  geo_list=["TestGeo"])
 
         expected_df = pd.DataFrame({
             "ts_id": [1],
@@ -135,18 +140,20 @@ class TestDbRead(unittest.TestCase):
         self.assertEqual(len(missing_geo_ids), 0)
 
     def test_large_data_insert(self):
+        num_rows = 1000
         large_block_list = []
-        for i in range(1000): #Higher values can be used later  
+        for i in range(num_rows):  # Higher values can be used later
             block = models.DataBlockBase(
                 type="timeseries", source="Kolada", source_id=f"X{i}",
                 tags="A;B;C", title=f"a_{i}", description="test_description",
                 integration_id=1, geo_groups="C", var_labels="Kön",
             )
             large_block_list.append(block)
-        
+
         crud.upsert_datablocks(self.session(), large_block_list)
-        got = crud.get_datablocks(db=self.session(), search_term="a_")
-        self.assertEqual(len(got), 250) #Right now we only get 250 results back
+        got = crud.get_datablocks(db=self.session())
+        self.assertEqual(len(got), num_rows)
+
 
 if __name__ == "__main__":
     unittest.main()
