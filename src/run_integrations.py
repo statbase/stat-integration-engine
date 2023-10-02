@@ -1,7 +1,6 @@
-import config.config as config
-import integrations.kolada as k
-from database import database, crud, schemas
 import multiprocessing as mp
+from integrations import kolada as k
+from database import database, crud, schemas
 
 """
 DEFAULT BATCH RUN
@@ -44,7 +43,7 @@ if __name__ == "__main__":
 
     # Verify blocks with my super advanced algorithm
     if len(datablock_list) < 6000:
-        exit("Where's the KPI's, Kolada!? Why you gotta do me like this? Thought we were friends...")
+        exit("God no KPIs")
 
     # Insert the datablocks and do the normalisation magic
     crud.upsert_datablocks(db_session, datablock_list)
@@ -52,7 +51,7 @@ if __name__ == "__main__":
     # Calculate and set meta
     datablock_list = crud.get_datablocks(db_session, source='Kolada')
 
-    pool = mp.Pool(processes=mp.cpu_count())
-    pool.map(set_meta_for_block, datablock_list)
-    pool.close()
-    pool.join()
+    with mp.Pool(processes=mp.cpu_count()) as pool:
+        pool.map(set_meta_for_block, datablock_list)
+        pool.close()
+        pool.join()

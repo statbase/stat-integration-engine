@@ -40,7 +40,8 @@ class Timeseries(Base):
     )
 
     ts_id = Column(Integer, primary_key=True)
-    data_id = Column(ForeignKey('data_block.data_id', ondelete='CASCADE'), nullable=False, index=True)
+    data_id = Column(ForeignKey('data_block.data_id',
+                                ondelete='CASCADE'), nullable=False, index=True)
     value = Column(Numeric, nullable=False)
     date = Column(Text, nullable=False)
     variable = Column(Text, nullable=False)

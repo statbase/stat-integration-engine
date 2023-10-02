@@ -1,8 +1,8 @@
 import unittest
-import api.routes as routes
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-from unittest.mock import patch
+from api import routes
+
 
 app = FastAPI()
 app.include_router(routes.router, prefix="")

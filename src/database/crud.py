@@ -1,9 +1,11 @@
+import pandas as pd
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import and_, or_, case, delete
 from sqlalchemy.dialects.sqlite import insert
-from . import schemas
+
 from models import models
-import pandas as pd
+from database import schemas
+
 
 """ READ """
 
@@ -26,7 +28,8 @@ def get_tags(db: Session, tag_list: list[int] = None) -> dict:
 
 
 # noinspection PyTypeChecker
-def get_datablocks(db: Session, search_term: str = '', tags: list[str] = None, **filters) -> list[models.DataBlock]:
+def get_datablocks(db: Session, search_term: str = '',
+                   tags: list[str] = None, **filters) -> list[models.DataBlock]:
     schema_datablock = schemas.DataBlock
     q = db.query(schema_datablock).filter(or_(schema_datablock.title.like(f'%{search_term}%'),
                                               schema_datablock.tags.like(f'%{search_term}%')))
@@ -57,7 +60,8 @@ def get_geo_list(db: Session):
     return q.all()
 
 
-def get_timeseries(db: Session, data_id: int, geo_list: list[str]) -> tuple[pd.DataFrame, list[str]]:
+def get_timeseries(db: Session, data_id: int,
+                   geo_list: list[str]) -> tuple[pd.DataFrame, list[str]]:
     ts_col = schemas.Timeseries
     q = db.query(ts_col).filter(ts_col.data_id == data_id)
     if geo_list:
@@ -74,8 +78,9 @@ def get_timeseries(db: Session, data_id: int, geo_list: list[str]) -> tuple[pd.D
 def calculate_meta(db: Session, data_id) -> dict:
     ts = schemas.Timeseries
 
-    def calculate_span(row_list: list) -> str:
-        return row_list[0][0] + '-' + row_list[-1][0]
+    def calculate_span(row_list: list[str]) -> str:
+        span_str = row_list[0][0] + '-' + row_list[-1][0]
+        return span_str
 
     def calculate_resolution(row_list: list) -> str:
         return 'year'

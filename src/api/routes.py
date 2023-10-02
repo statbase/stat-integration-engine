@@ -1,11 +1,14 @@
-from fastapi import APIRouter, HTTPException, Depends
-import models.models as models
 import json
 import pandas as pd
+
+from fastapi import APIRouter, HTTPException, Depends
+from sqlalchemy.orm import Session
+
+from models import models
 from integrations import kolada as k
 from integrations.integrations import GeoCache
 from database import database, crud
-from sqlalchemy.orm import Session
+
 
 router = APIRouter()
 kolada = k.KoladaIntegration()
@@ -45,7 +48,7 @@ def parse_tags(tag_string: str) -> list[str]:
 def parse_geo_ids(id_list: str) -> list[str]:
     if len(id_list) > 50:  # 10 geo_ids + comma
         raise ValueError("to many characters in geo_ids filter (>50)")
-    geo_list = [id for id in id_list.split(',')]
+    geo_list = id_list.split(',')
     for id in geo_list:
         if id not in geo_cache.get_id_list():
             raise ValueError(f"illegal geo_id provided: {id}")
@@ -73,7 +76,7 @@ async def get_timeseries_by_id(data_id: int, geo_ids: str, db: Session = Depends
     ts, missing_ids = crud.get_timeseries(db, data_id, id_list)
     if missing_ids:
         dblock_list = crud.get_datablocks(db, data_id=data_id)
-        ts_fetched = kolada.get_timeseries(dblock_list[0], missing_ids)  # List should only contain 1 entry
+        ts_fetched = kolada.get_timeseries(dblock_list[0], missing_ids)
         crud.insert_timeseries(db, ts_fetched)
         ts = pd.concat([ts, ts_fetched])
     ts.drop(['ts_id', 'data_id'], axis=1, inplace=True)
