@@ -2,12 +2,8 @@
 
 A tool that fetches and normalises statistical data from public sources.
 
-https://excalidraw.com/#json=7-lp_XmeB7ej3ttmi1ecu,R08EDmkB-lEaLrrd3oFrWQ
-
-![design_draft(2)](https://github.com/gusan735/stat-integration-engine/assets/38020265/5c31ac99-1884-4434-b29a-a1bacc7ace29)
+[![image](https://github.com/statbase/stat-integration-engine/assets/38020265/679d90a5-9193-4738-b2f2-056a089815c6)](https://excalidraw.com/#json=ZOUbDgS_wxDpZi7D3SpsE,4jQWhDwvkYDzGqceeLOecQ)https://excalidraw.com/#json=ZOUbDgS_wxDpZi7D3SpsE,4jQWhDwvkYDzGqceeLOecQ
 
 ### Run in Docker
 See Dockerfile. Example: 
 `docker build -t app . && docker run app`
-
-
