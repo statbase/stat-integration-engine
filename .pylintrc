@@ -67,7 +67,7 @@ ignored-modules=
 
 # Python code to execute, usually for sys.path manipulation such as
 # pygtk.require().
-init-hook="from pylint.config import find_default_config_files; import os, sys; c = find_default_config_files().__next__(); sys.path.append(os.path.dirname(c.parent) + '/src')"
+#init-hook=
 
 # Use multiple processes to speed up Pylint. Specifying 0 will auto-detect the
 # number of processors available to use, and will cap the count on Windows to
@@ -446,7 +446,8 @@ disable=raw-checker-failed,
         broad-exception-caught,
         unnecessary-pass,
         unused-argument,
-        redefined-outer-name
+        redefined-outer-name,
+        import-error
 
 
 # Enable the message, report, category or checker with the given id(s). You can
