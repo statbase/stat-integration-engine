@@ -446,7 +446,8 @@ disable=raw-checker-failed,
         broad-exception-caught,
         unnecessary-pass,
         unused-argument,
-        redefined-outer-name
+        redefined-outer-name,
+        import-error
 
 
 # Enable the message, report, category or checker with the given id(s). You can
