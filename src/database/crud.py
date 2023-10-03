@@ -28,8 +28,8 @@ def get_tags(db: Session, tag_list: list[int] = None) -> dict:
 
 
 # noinspection PyTypeChecker
-def get_datablocks(db: Session, search_term: str = '',
-                   tags: list[str] = None, **filters) -> list[models.DataBlock]:
+def get_datablocks(db: Session, search_term: str = '', tags: list[str] = None,
+                   row_limit: int = 0,  **filters) -> list[models.DataBlock]:
     schema_datablock = schemas.DataBlock
     q = db.query(schema_datablock).filter(or_(schema_datablock.title.like(f'%{search_term}%'),
                                               schema_datablock.tags.like(f'%{search_term}%')))
@@ -48,8 +48,8 @@ def get_datablocks(db: Session, search_term: str = '',
             else_=2
         )
     )
-    if len(search_term) > 0:
-        q = q.limit(250)
+    if int(row_limit) > 0:
+        q = q.limit(row_limit)
     rows = q.all()
 
     return [models.DataBlock(**row.__dict__) for row in rows]
