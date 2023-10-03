@@ -1,7 +1,9 @@
 import sys
+import functools
 import multiprocessing as mp
 from integrations import kolada as k, integrations as i
 from database import database, crud, schemas
+
 
 """
 DEFAULT BATCH RUN
@@ -53,6 +55,6 @@ if __name__ == "__main__":
         if "--meta" in sys.argv:
             datablock_list = crud.get_datablocks(db_session)
             with mp.Pool(processes=mp.cpu_count()) as pool:
-                pool.map(set_meta_for_block, datablock_list)
+                pool.map(functools.partial(set_meta_for_block, integration), datablock_list)
                 pool.close()
                 pool.join()

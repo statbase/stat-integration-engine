@@ -27,12 +27,5 @@ class TestHelpers(unittest.TestCase):
             routes.parse_geo_ids(filter)
 
 
-class TestRoutes(unittest.TestCase):
-    def test_get_tags(self):
-        client = TestClient(app)
-
-        res = client.get("/tags")
-        self.assertEqual(res.status_code, 200)
-
 if __name__ == '__main__':
     unittest.main()

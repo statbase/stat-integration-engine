@@ -96,7 +96,7 @@ async def get_datablocks(search_term: str = '', filter: str = None, tags: str = 
         filter_args = parse_datablock_filter(filter)
     except ValueError as e:
         return HTTPException(422, detail=str(e))
-    return crud.get_datablocks(session, search_term, tag_list, **filter_args)
+    return crud.get_datablocks(session, search_term=search_term, tags=tag_list, **filter_args)
 
 
 @router.get('/geo')
