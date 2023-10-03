@@ -10,6 +10,7 @@ from database.scripts import scripts
 
 from models import models
 
+#log
 
 def setup_test_db() -> scoped_session:
     # Create session
