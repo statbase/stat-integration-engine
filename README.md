@@ -1,7 +1,7 @@
 # stat-integration-engine
 
 A tool that fetches and normalises statistical data from public sources.
-(https://excalidraw.com/#json=ZOUbDgS_wxDpZi7D3SpsE,4jQWhDwvkYDzGqceeLOecQ)https://excalidraw.com/#json=ZOUbDgS_wxDpZi7D3SpsE,4jQWhDwvkYDzGqceeLOecQ
+https://excalidraw.com/#json=ZOUbDgS_wxDpZi7D3SpsE,4jQWhDwvkYDzGqceeLOecQ
 
 ### Run in Docker
 See Dockerfile. Example: 
