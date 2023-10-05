@@ -1,6 +1,6 @@
 FROM python:3.10
 
-ENV DB_STRING=stat-db.py
+ENV DB_PATH=stat-db.py
 
 WORKDIR app
 

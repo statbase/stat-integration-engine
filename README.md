@@ -9,7 +9,7 @@ See Dockerfile. Example:
 
 ### Run locally
 1. Install dependencies: `pip install -r requirements.txt`
-2. Set variables in src/config/config.env (Make sure DB_STRING is absolute path)
+2. Set variables in src/config/config.env (Make sure DB_PATH is absolute path)
    - Export them. Bash example: `export $(cat src/config/config.env | xargs)`
 3. Setup & populate database: `make run_integrations`
 4. Start the server: `cd src && uvicorn main:app`
