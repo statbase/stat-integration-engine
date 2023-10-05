@@ -5,10 +5,11 @@ import requests
 from dateutil import parser
 
 from models import models
+from config import configure_logger
 
 
 cur_dir = os.path.dirname(os.path.realpath(__file__))
-
+logger = configure_logger.get_logger(__name__)
 
 class GeoCache:
     def __init__(self):
@@ -24,6 +25,7 @@ class GeoCache:
 def request_json(url):
     res = requests.get(url, timeout=10)
     if res.status_code != 200:
+        logger.error("bad status code: " + res.status_code)
         raise ValueError("bad status code: " + res.status_code)
     return res.json()
 

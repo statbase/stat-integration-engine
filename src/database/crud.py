@@ -5,7 +5,9 @@ from sqlalchemy.dialects.sqlite import insert
 
 from models import models
 from database import schemas
+from config import configure_logger
 
+logger = configure_logger.get_logger(__name__)
 
 """ READ """
 
@@ -97,6 +99,7 @@ def calculate_meta(db: Session, data_id) -> dict:
     date_rows = date_query.all()
 
     if not date_rows:
+        logger.error(f'No timeseries found for data_id: {data_id}')
         raise FileNotFoundError('No timeseries found')
 
     meta = {'span': calculate_span(date_rows),

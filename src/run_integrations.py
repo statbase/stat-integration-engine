@@ -3,6 +3,7 @@ import functools
 import multiprocessing as mp
 from integrations import kolada as k, integrations as i
 from database import database, crud, schemas
+from config import configure_logger
 
 
 """
@@ -16,6 +17,8 @@ OPTIONALS
 1. Calculate avg 
 """
 db_session = database.Session()
+
+logger = configure_logger.get_logger(__name__)
 
 
 # TODO: Don't hardcode geo_ids
@@ -32,6 +35,7 @@ def set_meta_for_block(integration: i.BaseIntegration, block: schemas.DataBlock)
         meta = crud.calculate_meta(db_session, block.data_id)
     except FileNotFoundError:
         print("data not found for id: " + block.source_id)
+        logger.error("data not found for id: " + block.source_id)
         return
     crud.update_datablock_meta(db_session, block.data_id, meta)
 

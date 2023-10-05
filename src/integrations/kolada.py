@@ -3,6 +3,9 @@ import pandas as pd
 
 from integrations import integrations as i
 from models import models
+from config import configure_logger
+
+logger = configure_logger.get_logger(__name__)
 
 
 def set_geo_group(label: str):
@@ -59,6 +62,7 @@ class KoladaIntegration(i.BaseIntegration):
             try:
                 data = i.request_json(url)
             except Exception as e:
+                logger.error(f'requesting json from API failed: {str(e)}')
                 print(f'requesting json from API failed: {str(e)}')
                 continue
             for year in data['values']:
@@ -82,6 +86,7 @@ class KoladaIntegration(i.BaseIntegration):
     def datablocks_from_kolada_endpoint(self, url) -> list:
         data = i.request_json(url)
         if data['count'] == 0:
+            logger.info('No data found')
             return []
         values = data['values']
         return [

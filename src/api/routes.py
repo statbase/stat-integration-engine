@@ -8,11 +8,13 @@ from models import models
 from integrations import kolada as k
 from integrations.integrations import GeoCache
 from database import database, crud
+from config import configure_logger
 
 
 router = APIRouter()
 kolada = k.KoladaIntegration()
 geo_cache = GeoCache()
+logger = configure_logger.get_logger(__name__)
 
 
 def get_session():
@@ -32,8 +34,10 @@ def parse_datablock_filter(filter: str) -> dict:
     for kwarg in kwarg_list:
         key, val = kwarg.split('=', 1)
         if key not in models.DataBlockBase.__annotations__:  # Okay, this is pretty hacky...
+            logger.error(f"invalid filter key: '{key}'")
             raise ValueError(f"invalid filter key: '{key}'")
         if len(val) == 0:
+            logger.error(f"length of filter value is 0")
             raise ValueError("length of filter value is 0")
         out[key] = val
     return out
@@ -47,10 +51,12 @@ def parse_tags(tag_string: str) -> list[str]:
 
 def parse_geo_ids(id_list: str) -> list[str]:
     if len(id_list) > 50:  # 10 geo_ids + comma
+        logger.error("to many characters in geo_ids filter (>50)")
         raise ValueError("to many characters in geo_ids filter (>50)")
     geo_list = id_list.split(',')
     for id in geo_list:
         if id not in geo_cache.get_id_list():
+            logger.error(f"illegal geo_id provided: {id}")
             raise ValueError(f"illegal geo_id provided: {id}")
     return geo_list
 
@@ -72,6 +78,7 @@ async def get_timeseries_by_id(data_id: int, geo_ids: str, db: Session = Depends
     try:
         id_list = parse_geo_ids(geo_ids)
     except ValueError as e:
+        logger.error(str(e))
         return HTTPException(422, str(e))
     ts, missing_ids = crud.get_timeseries(db, data_id, id_list)
     if missing_ids:
@@ -95,6 +102,7 @@ async def get_datablocks(search_term: str = '', filter: str = None, tags: str = 
     try:
         filter_args = parse_datablock_filter(filter)
     except ValueError as e:
+        logger.error(str(e))
         return HTTPException(422, detail=str(e))
     return crud.get_datablocks(session, search_term=search_term, tags=tag_list, **filter_args)
 
