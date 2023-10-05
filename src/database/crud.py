@@ -10,7 +10,7 @@ from database import schemas
 """ READ """
 
 
-def get_tags(db: Session, tag_list: list[int] = None) -> dict:
+def get_tags(db: Session, tag_list: list[str] = None) -> dict:
     tags_col = schemas.DataBlock.tags
     tag_counts = {}
     q = db.query(schemas.DataBlock.tags)
