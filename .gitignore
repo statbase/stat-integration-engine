@@ -3,3 +3,6 @@ lib*
 bin*
 .DS*
 *.pyc
+stat-env*
+.vscode*
+src/db/stat-db.db

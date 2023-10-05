@@ -37,7 +37,7 @@ def parse_datablock_filter(filter: str) -> dict:
             logger.error(f"invalid filter key: '{key}'")
             raise ValueError(f"invalid filter key: '{key}'")
         if len(val) == 0:
-            logger.error(f"length of filter value is 0")
+            logger.error("length of filter value is 0")
             raise ValueError("length of filter value is 0")
         out[key] = val
     return out
