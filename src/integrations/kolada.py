@@ -32,7 +32,7 @@ class KoladaIntegration(i.BaseIntegration):
         self.base_url = 'http://api.kolada.se/v2'
         self.integration_id = 1
 
-    def get_datablocks(self) -> list[models.DataBlockBase]:
+    def get_datablocks(self) -> list[models.SourceDataBlock]:
         url = self.base_url + '/kpi'
         datablocks = self.datablocks_from_kolada_endpoint(url)
         # Fetch rest of pages if any
@@ -42,14 +42,14 @@ class KoladaIntegration(i.BaseIntegration):
             next_blocks = self.datablocks_from_kolada_endpoint(paged_url)
             if not next_blocks:
                 break
+
             datablocks.extend(next_blocks)
             page += 1
         return datablocks
 
     """
-    It's messy, but give me a break! Normalising data 
-    from a proprietary API does not have to be pretty! 
-    Damnit, if you don't like it; come up with a fixing PR or shut up!
+    It's pretty messy, but works. Not prioritizing cleanup, since proprietary API:s,
+    might break and need rewriting at any time.
     """
 
     def get_timeseries(self, dblock: models.DataBlock, geo_list: list[str]) -> pd.DataFrame:
@@ -79,13 +79,14 @@ class KoladaIntegration(i.BaseIntegration):
                     cols['geo_id'].append(geo_id)
         return pd.DataFrame(cols)
 
+# TODO! TODO: Should maybe be simple injection in caller.
     def datablocks_from_kolada_endpoint(self, url) -> list:
         data = i.request_json(url)
         if data['count'] == 0:
             return []
         values = data['values']
         return [
-            models.DataBlockBase(**{
+            models.SourceDataBlock(**{
                 'title': value['title'],
                 'type': 'timeseries',
                 'source': 'Kolada',

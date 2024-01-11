@@ -29,27 +29,27 @@ class TestDbRead(unittest.TestCase):
     def setUp(self):
         self.session = setup_test_db()
         self.block_list = [
-            models.DataBlockBase(
+            models.SourceDataBlock(
                 type="timeseries", source="Kolada", source_id="A343434",
                 tags="A;B;C;Pear", title="Lund", description="test_description",
                 integration_id=1, geo_groups="C", var_labels="Kön",
             ),
-            models.DataBlockBase(
+            models.SourceDataBlock(
                 type="timeseries", source="Kolada", source_id="B343434",
                 tags="A;C", title="Malmö", description="test_description",
                 integration_id=1, geo_groups="A", var_labels="Kön",
             ),
-            models.DataBlockBase(
+            models.SourceDataBlock(
                 type="map", source="SEB", source_id="C343434",
                 tags="C;D;Pear;Apple", title="Göteborg", description="test_description",
                 integration_id=1, geo_groups="B", var_labels="Man",
             ),
-            models.DataBlockBase(
+            models.SourceDataBlock(
                 type="timeseries", source="SEB", source_id="D343434",
                 tags="X;Y;Z", title="Stockholm", description="custom_description",
                 integration_id=1, geo_groups="D", var_labels="Kvinna",
             ),
-            models.DataBlockBase(
+            models.SourceDataBlock(
                 type="map", source="Kolada", source_id="E343434",
                 tags="M;N;O;P", title="Västerås", description="another_description",
                 integration_id=2, geo_groups="A", var_labels="Kvinna",
@@ -143,7 +143,7 @@ class TestDbRead(unittest.TestCase):
         num_rows = 1000
         large_block_list = []
         for i in range(num_rows):  # Higher values can be used later
-            block = models.DataBlockBase(
+            block = models.SourceDataBlock(
                 type="timeseries", source="Kolada", source_id=f"X{i}",
                 tags="A;B;C", title=f"a_{i}", description="test_description",
                 integration_id=1, geo_groups="C", var_labels="Kön",

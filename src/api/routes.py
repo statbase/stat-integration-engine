@@ -31,7 +31,7 @@ def parse_datablock_filter(filter: str) -> dict:
     kwarg_list = filter.split(',')
     for kwarg in kwarg_list:
         key, val = kwarg.split('=', 1)
-        if key not in models.DataBlockBase.__annotations__:  # Okay, this is pretty hacky...
+        if key not in models.SourceDataBlock.__annotations__:  # Okay, this is pretty hacky...
             raise ValueError(f"invalid filter key: '{key}'")
         if len(val) == 0:
             raise ValueError("length of filter value is 0")
