@@ -9,7 +9,7 @@ from database import database, crud, schemas
 Default batch run
 1. Import datablocks from each integration
 2. Upsert datablocks to database
-If timeseries enabled
+If --meta flag 
 3. Insert timeseries for 1 geo
 4. Calculate meta based on that -> upload to db
 
@@ -47,7 +47,7 @@ if __name__ == "__main__":
         datablock_list = integration.get_datablocks()
 
         if len(datablock_list) < 6000:
-            exit("God no KPIs")
+            exit("Got no KPIs")
 
         # Insert the datablocks and do the normalisation magic
         crud.upsert_datablocks(db_session, datablock_list)
