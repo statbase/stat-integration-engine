@@ -116,7 +116,7 @@ def calculate_meta(db: Session, data_id) -> dict:
 """ WRITE """
 
 
-def upsert_datablocks(db: Session, datablock_list: list[models.DataBlockBase]):
+def upsert_datablocks(db: Session, datablock_list: list[models.SourceDataBlock]):
     for dblock in datablock_list:
         q = insert(schemas.DataBlock).values(**dblock.__dict__)
         q = q.on_conflict_do_update(

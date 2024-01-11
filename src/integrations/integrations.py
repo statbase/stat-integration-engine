@@ -6,9 +6,7 @@ from dateutil import parser
 
 from models import models
 
-
 cur_dir = os.path.dirname(os.path.realpath(__file__))
-
 
 class GeoCache:
     def __init__(self):
@@ -39,7 +37,7 @@ class BaseIntegration:
     base_url: str
     integration_id: int
 
-    def get_datablocks(self) -> list[models.DataBlockBase]:
+    def get_datablocks(self) -> list[models.SourceDataBlock]:
         """get datablocks from source"""
         pass
 

@@ -6,9 +6,10 @@ from database import database, crud, schemas
 
 
 """
-DEFAULT BATCH RUN
+Default batch run
 1. Import datablocks from each integration
 2. Upsert datablocks to database
+If timeseries enabled
 3. Insert timeseries for 1 geo
 4. Calculate meta based on that -> upload to db
 
@@ -51,10 +52,10 @@ if __name__ == "__main__":
         # Insert the datablocks and do the normalisation magic
         crud.upsert_datablocks(db_session, datablock_list)
 
-        # Calculate and set meta
+
         if "--meta" in sys.argv:
             datablock_list = crud.get_datablocks(db_session)
-            with mp.Pool(processes=mp.cpu_count()) as pool:
+            with mp.Pool(processes=mp.cpu_count()) as pool: # Basic pooling, may be improved 
                 pool.map(functools.partial(set_meta_for_block, integration), datablock_list)
                 pool.close()
                 pool.join()
